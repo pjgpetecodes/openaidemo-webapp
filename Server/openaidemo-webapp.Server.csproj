@@ -6,9 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>openaidemo-webapp.Server</RootNamespace>
     <AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
+    <UserSecretsId>510b77a9-dca7-4334-84ba-94c8a5a921cf</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.7" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0-preview.7.*" />
   </ItemGroup>
 

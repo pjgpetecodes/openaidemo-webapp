@@ -1,9 +1,114 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Components.Forms
+@using openaidemo_webapp.Client.Components.ChatBubble;
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container">
+    <h1>AI Chat Interface</h1>
+    <div id="messages" class="chat-window" style="width: 100%; height: 500px; border: 1px solid #ccc; overflow-y: scroll;" @ref="messagesDiv">
+        <div class="chat-message" style="margin-bottom: 10px;" >
 
-Welcome to your new app.
+            @foreach (var message in chatMessages)
+            {  
+                <ChatBubble Message="message" />  
+            } 
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+        </div>
+    </div>
+
+    <EditForm Model="chatInput" OnValidSubmit="SendQuery">
+        <div class="input-group" style="margin-top: 10px;">
+            <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
+            <button type="submit" class="btn btn-primary">Send</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+
+    private HubConnection hubConnection;
+    private ChatInput chatInput = new ChatInput();
+    private List<ChatBubbleMessage> chatMessages = new List<ChatBubbleMessage>();
+    private ElementReference messagesDiv;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+        .WithAutomaticReconnect()
+        .Build();
+
+        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            /*
+            var encodedMsg = $"{user}: {message}";
+            chatMessages.Add(new ChatBubbleMessage { ChatBubbleId =  new Guid().ToString(), Content = message, Type = "ai" });
+            chatInput.Query = string.Empty;
+            StateHasChanged();
+            */
+
+        });
+
+        hubConnection.On<string, string, string>("ReceiveMessageToken", async (chatBubbleId, user, messageToken) =>
+        {
+            // Find the chat message with the supplied chatBubbleId
+            var chatMessage = chatMessages.Where(chatMessageItem => chatMessageItem.ChatBubbleId == chatBubbleId).FirstOrDefault();
+
+            if (chatMessage != null)
+            {
+                chatMessage.Content = chatMessage.Content + messageToken;
+            }
+            else
+            {
+                chatMessages.Add(new ChatBubbleMessage { ChatBubbleId = chatBubbleId, Content = messageToken, Type = "ai" });
+            }
+
+            await JS.InvokeVoidAsync("scrollToBottom", "messages");
+
+            chatInput.Query = string.Empty;
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    public bool IsConnected =>
+    hubConnection.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        await hubConnection.DisposeAsync();
+    }
+
+    private async Task SendQuery()
+    {
+        if (!string.IsNullOrWhiteSpace(chatInput.Query))
+        {
+            String chatMessageGuid = System.Guid.NewGuid().ToString();
+
+            chatMessages.Add(new ChatBubbleMessage {ChatBubbleId = chatMessageGuid,  Content = chatInput.Query, Type = "human" });
+            await JS.InvokeVoidAsync("scrollToBottom", "messages");
+            await hubConnection.SendAsync("SendMessage", "human", chatInput.Query);
+        }
+    }  
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SendQuery();
+        }
+    }
+
+    public class ChatInput
+    {
+        public string Query { get; set; }
+    }
+
+
+
+}

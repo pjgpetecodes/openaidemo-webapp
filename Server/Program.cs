@@ -1,9 +1,11 @@
+using openaidemo_webapp.Server.Hubs;
 using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
@@ -30,6 +32,7 @@ app.UseRouting();
 
 
 app.MapRazorPages();
+app.MapHub<ChatHub>("/chathub");
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 

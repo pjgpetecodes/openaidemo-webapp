@@ -1,0 +1,29 @@
+﻿<div class="@chatBubbleStyle">
+    @if (Message.IsTemporaryResponse)
+    {
+        <div class="@typingStyle">
+            <span>.</span>
+            <span>.</span>
+            <span>.</span>
+        </div>
+    }
+    else
+    {
+        <div>@(new MarkupString(Message.Content))</div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public ChatBubbleMessage Message { get; set; }
+
+    private string chatBubbleStyle => $"chatBubbleStyle {Message.Type} {(Message.Type == "ai" ? "ai" : "human")}";
+    private string typingStyle => "typing";
+
+    private bool shouldRender = true;
+
+    protected override bool ShouldRender()
+    {
+        return shouldRender;
+    }
+}
