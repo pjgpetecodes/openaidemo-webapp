@@ -25,6 +25,7 @@
 .typing {
     display: inline-block;
     margin-left: 0px;
+    white-space: nowrap;
 }
 
     .typing span {

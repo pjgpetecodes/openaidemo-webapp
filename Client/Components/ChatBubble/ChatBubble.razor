@@ -17,7 +17,7 @@
     [Parameter]
     public ChatBubbleMessage Message { get; set; }
 
-    private string chatBubbleStyle => $"chatBubbleStyle {Message.Type} {(Message.Type == "ai" ? "ai" : "human")}";
+    private string chatBubbleStyle => $"chatBubbleStyle {Message.Type}";
     private string typingStyle => "typing";
 
     private bool shouldRender = true;

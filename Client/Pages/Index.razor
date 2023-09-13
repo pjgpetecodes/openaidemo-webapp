@@ -7,9 +7,9 @@
 
 <PageTitle>Index</PageTitle>
 
-<div class="container">
-    <h1>AI Chat Interface</h1>
-    <div id="messages" class="chat-window" style="width: 100%; height: 500px; border: 1px solid #ccc; overflow-y: scroll;" @ref="messagesDiv">
+<div class="chat-container">
+    <h1>Azure Open AI Chat</h1>
+    <div id="messages" class="chat-window" @ref="messagesDiv">
         <div class="chat-message" style="margin-bottom: 10px;" >
 
             @foreach (var message in chatMessages)
@@ -53,18 +53,24 @@
 
         });
 
-        hubConnection.On<string, string, string>("ReceiveMessageToken", async (chatBubbleId, user, messageToken) =>
+        hubConnection.On < string, string, string, bool> ("ReceiveMessageToken", async (chatBubbleId, user, messageToken, isTemporaryResponse) =>
         {
             // Find the chat message with the supplied chatBubbleId
             var chatMessage = chatMessages.Where(chatMessageItem => chatMessageItem.ChatBubbleId == chatBubbleId).FirstOrDefault();
 
             if (chatMessage != null)
             {
+                if (chatMessage.IsTemporaryResponse)
+                {
+                    chatMessage.Content = "";
+                    chatMessage.IsTemporaryResponse = false;
+                }
+
                 chatMessage.Content = chatMessage.Content + messageToken;
             }
             else
             {
-                chatMessages.Add(new ChatBubbleMessage { ChatBubbleId = chatBubbleId, Content = messageToken, Type = "ai" });
+                chatMessages.Add(new ChatBubbleMessage { ChatBubbleId = chatBubbleId, Content = messageToken, Type = "ai", IsTemporaryResponse = isTemporaryResponse });
             }
 
             await JS.InvokeVoidAsync("scrollToBottom", "messages");
@@ -98,10 +104,10 @@
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter")
-        {
-            await SendQuery();
-        }
+        // if (e.Key == "Enter")
+        // {
+        //     await SendQuery();
+        // }
     }
 
     public class ChatInput

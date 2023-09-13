@@ -21,13 +21,16 @@ namespace openaidemo_webapp.Server.Helpers
         {
             string key = _config["OpenAI:Key"];
             string instanceName = _config["OpenAI:InstanceName"];
-
             string endpoint = $"https://{instanceName}.openai.azure.com/";
-
-            var client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(key));
-
             string deploymentName = _config["OpenAI:DeploymentName"];
 
+            // Generating a GUID for this message and send a temporary holoding message
+            String responseGuid = System.Guid.NewGuid().ToString();
+            await signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", "...", true);
+
+            // Create a new Azure OpenAI Client
+            var client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(key));
+            
             System.Diagnostics.Debug.Print($"Input: {prompt}");
             var chatCompletionsOptions = new ChatCompletionsOptions()
             {
@@ -46,8 +49,6 @@ namespace openaidemo_webapp.Server.Helpers
 
             var completion = "";
 
-            String responseGuid = System.Guid.NewGuid().ToString();
-
             await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming())
             {
                 await foreach (ChatMessage message in choice.GetMessageStreaming())
@@ -57,7 +58,7 @@ namespace openaidemo_webapp.Server.Helpers
                         if (message.Content != null) 
                         {
                             completion += message.Content.ToString();
-                            await signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", message.Content.ToString());
+                            await signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", message.Content.ToString(), false);
 
                             System.Diagnostics.Debug.Print(message.Content);
                         }

@@ -2,6 +2,7 @@
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    height: 100%;
 }
 
 h1:focus {
@@ -99,3 +100,18 @@ a, .btn-link {
     .loading-progress-text:after {
         content: var(--blazor-load-percentage-text, "Loading");
     }
+
+ .content {
+     height: 100%;
+ }
+
+.chat-container {
+    height: 800px;
+}
+
+.chat-window {
+    width: 100%;
+    height: 85%;
+    border: 1px solid #ccc;
+    overflow-y: scroll;
+}
