@@ -1,0 +1,44 @@
+﻿@inherits ComponentBase
+@using Microsoft.AspNetCore.Components
+
+@if (isLoading)
+{
+    <div class="LoaderContainer">
+        <!-- Use Loader component for an animated spinner -->
+        <p>Loading sources...</p>
+    </div>
+}
+else
+{
+    <div class="ChatSourcesContent">
+        @for (int i = 0; i < sourcesItems.Count; i++)
+        {
+            var index = i;
+            <div class="@(expandedCards[index] ? "SourceCard expanded" : "SourceCard")"
+            @onclick="@(() => ToggleCard(index))">
+                <h3>DOC @(index + 1)</h3>
+                <h4>@sourcesItems[index].m_doc_id</h4>
+                <div class="SourceCardText" @((MarkupString)sourcesItems[index].content)>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public List<dynamic> sourcesItems { get; set; }
+    [Parameter] public bool isLoading { get; set; }
+    private List<bool> expandedCards;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        expandedCards = new List<bool>(new bool[sourcesItems.Count]);
+    }
+
+    private void ToggleCard(int index)
+    {
+        expandedCards[index] = !expandedCards[index];
+        StateHasChanged(); // Trigger a re-render to reflect the changes
+    }
+}

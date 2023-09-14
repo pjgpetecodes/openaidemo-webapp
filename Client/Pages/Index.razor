@@ -9,23 +9,30 @@
 
 <div class="chat-container">
     <h1>Azure Open AI Chat</h1>
-    <div id="messages" class="chat-window" @ref="messagesDiv">
-        <div class="chat-message" style="margin-bottom: 10px;" >
+    <div class="chat-column">
+        <div id="messages" class="chat-window" @ref="messagesDiv">
+            <div class="chat-message" style="margin-bottom: 10px;">
 
-            @foreach (var message in chatMessages)
-            {  
-                <ChatBubble Message="message" />  
-            } 
+                @foreach (var message in chatMessages)
+                {
+                    <ChatBubble Message="message" />
+                }
 
+            </div>
         </div>
+
+        <EditForm Model="chatInput" OnValidSubmit="SendQuery">
+            <div class="input-group" style="margin-top: 10px;">
+                <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
+                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
+            </div>
+        </EditForm>
+
     </div>
+    <div class="sources-column">
+        <h3>Sources</h3>
 
-    <EditForm Model="chatInput" OnValidSubmit="SendQuery">
-        <div class="input-group" style="margin-top: 10px;">
-            <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
-            <button type="submit" class="btn btn-primary">Send</button>
-        </div>
-    </EditForm>
+    </div>
 </div>
 
 @code {

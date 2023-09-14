@@ -1,0 +1,64 @@
+﻿.ChatSourcesContent {
+    max-height: 460px;
+    overflow-y: auto;
+}
+
+.SourceCard {
+    background-color: #f8f9fa;
+    padding: 1em;
+    margin-bottom: 1em;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+    .SourceCard h3 {
+        margin: 0 0 0.5em;
+        font-size: 1.2em;
+    }
+
+    .SourceCard h4 {
+        margin: 0 0 1em;
+        font-size: 0.9em;
+        color: #6c757d;
+    }
+
+    .SourceCard p {
+        margin: 0;
+        font-size: 0.9em;
+        line-height: 1.5;
+    }
+
+.SourceCardText {
+    position: relative;
+    overflow: hidden;
+    max-height: 3.6em;
+    line-height: 1.2em;
+    padding-right: 1em;
+}
+
+    .SourceCardText:after {
+        content: "...";
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        background-color: #f8f9fa;
+        padding-left: 0.5em;
+        cursor: pointer;
+    }
+
+.SourceCard.expanded .SourceCardText {
+    max-height: none;
+    overflow: visible;
+}
+
+    .SourceCard.expanded .SourceCardText:after {
+        content: "";
+    }
+
+.LoaderContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+    // Set the height equal to the max-height of the scrollable container width: 100%;
+}
