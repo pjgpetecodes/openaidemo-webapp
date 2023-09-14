@@ -1,127 +1,62 @@
 ﻿@page "/"
-@using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.AspNetCore.Components.Forms
-@using openaidemo_webapp.Client.Components.ChatBubble;
+@using openaidemo_webapp.Shared
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Azure OpenAI Demo</PageTitle>
 
-<div class="chat-container">
-    <h1>Azure Open AI Chat</h1>
-    <div class="chat-column">
-        <div id="messages" class="chat-window" @ref="messagesDiv">
-            <div class="chat-message" style="margin-bottom: 10px;">
-
-                @foreach (var message in chatMessages)
-                {
-                    <ChatBubble Message="message" />
-                }
-
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h1 class="mt-5">Azure Open AI Chat Demo</h1>
+                <p class="lead">Welcome to the Azure Open AI Chat Demo! Explore the features of Azure Open AI through a chat interface and cognitive search.</p>
             </div>
         </div>
-
-        <EditForm Model="chatInput" OnValidSubmit="SendQuery">
-            <div class="input-group" style="margin-top: 10px;">
-                <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
-                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mt-5">
+                    <div class="card-body">
+                        <h4 class="card-title">Chat Page</h4>
+                        <p class="card-text">Experience the power of Azure Open AI through a chat interface. Engage in a conversation with the AI to get answers to your questions and explore various topics.</p>
+                        <a href="openaichat" class="btn btn-primary">Go to Chat Page</a>
+                    </div>
+                </div>
             </div>
-        </EditForm>
-
+            <div class="col-md-6">
+                <div class="card mt-5">
+                    <div class="card-body">
+                        <h4 class="card-title">Azure AI with Cognitive Search</h4>
+                        <p class="card-text">Leverage the capabilities of Azure AI and Cognitive Search to find relevant information from a large dataset. Use the search feature to find answers and insights quickly and efficiently.</p>
+                        <a href="/openaicogsearch" class="btn btn-primary">Go to Cognitive Search Page</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-5">
+            <div class="col">
+                <h3>Resources</h3>
+                <ul class="list-unstyled">
+                    <li><a href="https://github.com/pjgpetecodes/openaidemo-webapp" target="_blank">GitHub repo</a></li>
+                <li><a href="https://azure.microsoft.com/en-us/products/ai-services/openai-service" target="_blank">Azure AI</a></li>
+                <li><a href="https://azure.microsoft.com/en-us/products/ai-services/cognitive-search" target="_blank">Azure Cognitive Search</a></li>
+                <li><a href="https://twitter.com/pete_codes" target="_blank">My Twitter account (@@pete_codes)</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
-    <div class="sources-column">
-        <h3>Sources</h3>
 
-    </div>
-</div>
 
 @code {
-
-    private HubConnection hubConnection;
-    private ChatInput chatInput = new ChatInput();
-    private List<ChatBubbleMessage> chatMessages = new List<ChatBubbleMessage>();
-    private ElementReference messagesDiv;
-
+        
     protected override async Task OnInitializedAsync()
     {
-        hubConnection = new HubConnectionBuilder()
-        .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
-        .WithAutomaticReconnect()
-        .Build();
-
-        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
-        {
-            /*
-            var encodedMsg = $"{user}: {message}";
-            chatMessages.Add(new ChatBubbleMessage { ChatBubbleId =  new Guid().ToString(), Content = message, Type = "ai" });
-            chatInput.Query = string.Empty;
-            StateHasChanged();
-            */
-
-        });
-
-        hubConnection.On < string, string, string, bool> ("ReceiveMessageToken", async (chatBubbleId, user, messageToken, isTemporaryResponse) =>
-        {
-            // Find the chat message with the supplied chatBubbleId
-            var chatMessage = chatMessages.Where(chatMessageItem => chatMessageItem.ChatBubbleId == chatBubbleId).FirstOrDefault();
-
-            if (chatMessage != null)
-            {
-                if (chatMessage.IsTemporaryResponse)
-                {
-                    chatMessage.Content = "";
-                    chatMessage.IsTemporaryResponse = false;
-                }
-
-                chatMessage.Content = chatMessage.Content + messageToken;
-            }
-            else
-            {
-                chatMessages.Add(new ChatBubbleMessage { ChatBubbleId = chatBubbleId, Content = messageToken, Type = "ai", IsTemporaryResponse = isTemporaryResponse });
-            }
-
-            await JS.InvokeVoidAsync("scrollToBottom", "messages");
-
-            chatInput.Query = string.Empty;
-            StateHasChanged();
-        });
-
-        await hubConnection.StartAsync();
+        
     }
-
-    public bool IsConnected =>
-    hubConnection.State == HubConnectionState.Connected;
 
     public async ValueTask DisposeAsync()
     {
-        await hubConnection.DisposeAsync();
+        
     }
-
-    private async Task SendQuery()
-    {
-        if (!string.IsNullOrWhiteSpace(chatInput.Query))
-        {
-            String chatMessageGuid = System.Guid.NewGuid().ToString();
-
-            chatMessages.Add(new ChatBubbleMessage {ChatBubbleId = chatMessageGuid,  Content = chatInput.Query, Type = "human" });
-            await JS.InvokeVoidAsync("scrollToBottom", "messages");
-            await hubConnection.SendAsync("SendMessage", "human", chatInput.Query);
-        }
-    }  
-
-    private async Task HandleKeyDown(KeyboardEventArgs e)
-    {
-        // if (e.Key == "Enter")
-        // {
-        //     await SendQuery();
-        // }
-    }
-
-    public class ChatInput
-    {
-        public string Query { get; set; }
-    }
-
-
 
 }

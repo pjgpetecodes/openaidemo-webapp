@@ -1,0 +1,121 @@
+﻿@page "/openaichat"
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Components.Forms
+@using openaidemo_webapp.Client.Components.ChatBubble
+@using openaidemo_webapp.Shared
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<PageTitle>Azure OpenAI Chat</PageTitle>
+
+<div class="chat-container">
+    <h1>Azure OpenAI Chat</h1>
+    <div id="messages" class="chat-window" @ref="messagesDiv">
+        <div class="chat-message" style="margin-bottom: 10px;">
+
+            @foreach (var message in chatMessages)
+            {
+                <ChatBubble Message="message" />
+            }
+
+        </div>
+    </div>
+
+    <EditForm Model="chatInput" OnValidSubmit="SendQuery">
+        <div class="input-group" style="margin-top: 10px;">
+            <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
+            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+
+    private HubConnection hubConnection;
+    private ChatInput chatInput = new ChatInput();
+    private List<OpenAIChatMessage> chatMessages = new List<OpenAIChatMessage>();
+    private ElementReference messagesDiv;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+        .WithAutomaticReconnect()
+        .Build();
+
+        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            /*
+            var encodedMsg = $"{user}: {message}";
+            chatMessages.Add(new ChatBubbleMessage { ChatBubbleId =  new Guid().ToString(), Content = message, Type = "ai" });
+            chatInput.Query = string.Empty;
+            StateHasChanged();
+            */
+
+        });
+
+        hubConnection.On < string, string, string, bool> ("ReceiveMessageToken", async (chatBubbleId, user, messageToken, isTemporaryResponse) =>
+        {
+            // Find the chat message with the supplied chatBubbleId
+            var chatMessage = chatMessages.Where(chatMessageItem => chatMessageItem.ChatBubbleId == chatBubbleId).FirstOrDefault();
+
+            if (chatMessage != null)
+            {
+                if (chatMessage.IsTemporaryResponse)
+                {
+                    chatMessage.Content = "";
+                    chatMessage.IsTemporaryResponse = false;
+                }
+
+                chatMessage.Content = chatMessage.Content + messageToken;
+            }
+            else
+            {
+                chatMessages.Add(new OpenAIChatMessage { ChatBubbleId = chatBubbleId, Content = messageToken, Type = "ai", IsTemporaryResponse = isTemporaryResponse });
+            }
+
+            await JS.InvokeVoidAsync("scrollToBottom", "messages");
+
+            chatInput.Query = string.Empty;
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    public bool IsConnected =>
+    hubConnection.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        await hubConnection.DisposeAsync();
+    }
+
+    private async Task SendQuery()
+    {
+        if (!string.IsNullOrWhiteSpace(chatInput.Query))
+        {
+            String chatMessageGuid = System.Guid.NewGuid().ToString();
+
+            chatMessages.Add(new OpenAIChatMessage {ChatBubbleId = chatMessageGuid,  Content = chatInput.Query, Type = "human" });
+            await JS.InvokeVoidAsync("scrollToBottom", "messages");
+            await hubConnection.SendAsync("SendMessage", "human", chatInput.Query);
+        }
+    }  
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        // if (e.Key == "Enter")
+        // {
+        //     await SendQuery();
+        // }
+    }
+
+    public class ChatInput
+    {
+        public string Query { get; set; }
+    }
+
+
+
+}

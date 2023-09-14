@@ -1,4 +1,6 @@
-﻿<div class="@chatBubbleStyle">
+﻿@using openaidemo_webapp.Shared
+
+<div class="@chatBubbleStyle">
     @if (Message.IsTemporaryResponse)
     {
         <div class="@typingStyle">
@@ -15,7 +17,7 @@
 
 @code {
     [Parameter]
-    public ChatBubbleMessage Message { get; set; }
+    public OpenAIChatMessage Message { get; set; }
 
     private string chatBubbleStyle => $"chatBubbleStyle {Message.Type}";
     private string typingStyle => "typing";

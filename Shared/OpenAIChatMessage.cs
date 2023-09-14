@@ -1,6 +1,6 @@
-﻿namespace openaidemo_webapp.Client.Components.ChatBubble
+﻿namespace openaidemo_webapp.Shared
 {
-    public class ChatBubbleMessage
+    public class OpenAIChatMessage
     {
         public string ChatBubbleId { get; set; }
         public string Type { get; set; }
