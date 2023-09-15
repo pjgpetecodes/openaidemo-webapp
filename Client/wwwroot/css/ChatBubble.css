@@ -58,3 +58,30 @@
         opacity: 0;
     }
 }
+
+.codeSnippet {
+    background-color: #000f;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.codeSnippetContainer {
+    position: relative;
+    display: inline-block;
+}
+
+.copyButton {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.codeSnippetContainer:hover .copyButton {
+    opacity: 1;
+}  

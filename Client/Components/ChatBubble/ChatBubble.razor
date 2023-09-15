@@ -1,4 +1,6 @@
-﻿@using openaidemo_webapp.Shared
+﻿@using System.Text.RegularExpressions;
+@using openaidemo_webapp.Shared
+@inject IJSRuntime JSRuntime
 
 <div class="@chatBubbleStyle">
     @if (Message.IsTemporaryResponse)
@@ -11,7 +13,27 @@
     }
     else
     {
-        <div>@(new MarkupString(Message.Content))</div>
+        @foreach (var item in ParseContent(Message.Content))
+        {
+            if (item.isCode)
+            {
+                if (item.isInlineCode)
+                {
+                    <code>@item.content</code>
+                }
+                else
+                {
+                    <div class="codeSnippetContainer">
+                        <pre class="codeSnippet">@item.content</pre>
+                        <button class="btn btn-sm btn-outline-secondary copyButton" @onclick="() => CopyToClipboard(item.content)">Copy</button>
+                    </div>
+                }
+            }
+            else
+            {
+                <span>@(new MarkupString(item.content))</span>
+            }
+        }
     }
 </div>
 
@@ -27,5 +49,58 @@
     protected override bool ShouldRender()
     {
         return shouldRender;
+    }
+
+    private List<(string content, bool isCode, bool isInlineCode)> ParseContent(string content)
+    {
+        List<(string content, bool isCode, bool isInlineCode)> parsedContent = new List<(string content, bool isCode, bool isInlineCode)>();
+
+        var regex = new Regex(@"(`{1,3})");
+        var matches = regex.Matches(content);
+
+        if (matches.Count > 0)
+        {
+            int currentIndex = 0;
+            bool inCodeBlock = false;
+            bool isInlineCode = false;
+
+            foreach (Match match in matches)
+            {
+                if (!inCodeBlock)
+                {
+                    if (match.Index > currentIndex)
+                    {
+                        parsedContent.Add((content.Substring(currentIndex, match.Index - currentIndex), false, false));
+                    }
+
+                    currentIndex = match.Index + match.Length;
+                    isInlineCode = match.Value.Length == 1;
+                    inCodeBlock = true;
+                }
+                else
+                {
+                    parsedContent.Add((content.Substring(currentIndex, match.Index - currentIndex), true, isInlineCode));
+                    currentIndex = match.Index + match.Length;
+                    inCodeBlock = false;
+                }
+            }
+
+            if (currentIndex < content.Length)
+            {
+                parsedContent.Add((content.Substring(currentIndex), inCodeBlock, isInlineCode));
+            }
+        }
+        else
+        {
+            parsedContent.Add((content, false, false));
+        }
+
+        return parsedContent;
+    }
+
+
+    private async Task CopyToClipboard(string text)
+    {
+        await JSRuntime.InvokeVoidAsync("copyToClipboard", text);
     }
 }
