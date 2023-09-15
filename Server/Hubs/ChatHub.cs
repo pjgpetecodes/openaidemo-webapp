@@ -18,7 +18,7 @@ namespace openaidemo_webapp.Server.Hubs
 
         public async Task SendMessage(string user, string message)
         {
-            var openAIHelper = new openaidemo_webapp.Server.Helpers.OpenAIHelper(_config);
+            var openAIHelper = new OpenAIHelper(_config);
 
             var response = await openAIHelper.QueryOpenAIWithPrompts(message, Clients.Caller);
         }

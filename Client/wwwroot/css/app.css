@@ -132,3 +132,8 @@ a, .btn-link {
     border: 1px solid #ccc;
     overflow-y: scroll;
 }
+
+.mud-card-content.extraction-results {
+    padding: 10px;
+    margin: 20px;
+}

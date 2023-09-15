@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
+    <UserSecretsId>adbc1617-6447-4c66-9eae-4a5cc7ea42aa</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
