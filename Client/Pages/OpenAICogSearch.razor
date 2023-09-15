@@ -33,19 +33,23 @@
         <MudList>
             @foreach (var extractionResult in extractionResults)
             {
-                <MudListItem Icon="@Icons.Material.Filled.AttachFile" Text="@extractionResult.FileName" InitiallyExpanded="false">
-                    <NestedList>
-                        @foreach (var extractedParagraph in extractionResult.ExtractedParagraphs)
-                        {
-                            <MudCard>
-                                <MudCardContent class="extraction-results">
-                                    <MudText Typo="Typo.h6">@extractedParagraph.Title</MudText>
-                                    <MudText><code>@extractedParagraph.Content</code></MudText>
-                                </MudCardContent>
-                            </MudCard>
-                        }
-                    </NestedList>
-                </MudListItem>
+                <MudExpansionPanel Icon="@Icons.Material.Filled.AttachFile" Text="@extractionResult.FileName">
+                    <ChildContent>
+                        <MudList>
+                            @foreach (var extractedParagraph in extractionResult.ExtractedParagraphs)
+                            {
+                                <MudListItem>
+                                    <MudCard>
+                                        <MudCardContent class="extraction-results">
+                                            <MudText Typo="Typo.h6">@extractedParagraph.Title</MudText>
+                                            <MudText><code>@extractedParagraph.Content</code></MudText>
+                                        </MudCardContent>
+                                    </MudCard>
+                                </MudListItem>
+                            }
+                        </MudList>
+                    </ChildContent>
+                </MudExpansionPanel>
             }
         </MudList>
     }
