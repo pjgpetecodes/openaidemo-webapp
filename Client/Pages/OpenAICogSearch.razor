@@ -27,6 +27,30 @@
         </MudButton>
     </ButtonTemplate>
 </MudFileUpload>
+
+    @if (extractionResults != null)
+    {
+        <MudList>
+            @foreach (var extractionResult in extractionResults)
+            {
+
+                <MudListItem Icon="@Icons.Material.Filled.AttachFile" Text="@extractionResult.FileName" InitiallyExpanded="false">
+
+                    <NestedList>
+
+                        @foreach (var extractedParagraph in extractionResult.ExtractedParagraphs)
+                        {
+                            <MudListItem Icon="@Icons.Material.Filled.AttachFile">
+                                @extractedParagraph.Title<code>@extractedParagraph.Content</code>
+                            </MudListItem>
+                        }
+
+                    </NestedList>
+
+                </MudListItem>
+            }
+        </MudList>
+    }
 </div>
 
 <div class="chat-container">
@@ -63,6 +87,9 @@
     private ChatInput chatInput = new ChatInput();
     private List<OpenAIChatMessage> chatMessages = new List<OpenAIChatMessage>();
     private ElementReference messagesDiv;
+    IList<IBrowserFile> uploadedFiles = new List<IBrowserFile>();
+    List<ExtractionResult> extractionResults = new List<ExtractionResult>();
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -139,23 +166,27 @@
         // }
     }
 
-    IList<IBrowserFile> uploadedFiles = new List<IBrowserFile>();
     private async void UploadFiles(IReadOnlyList<IBrowserFile> files)
     {
         foreach (var file in files)
         {
-            using (var originalStream = file.OpenReadStream())
+            using (var originalStream = file.OpenReadStream(maxAllowedSize: 5000000))
             using (var memoryStream = new MemoryStream())
             {
                 await originalStream.CopyToAsync(memoryStream);
                 // Call the Blazor Server backend to upload the file
-                var uploadedFile = await UploadFileToServer(memoryStream, file.Name, file.ContentType);
+                ExtractionResult extractionResult = await UploadFileToServer(memoryStream, file.Name, file.ContentType);
+                extractionResults.Add(extractionResult);
+
                 uploadedFiles.Add(file);
+                StateHasChanged();
             }
         }
+
+        Console.WriteLine("File Upload Complete");
     }
 
-    private async Task<UploadedFile> UploadFileToServer(Stream stream, string fileName, string contentType)
+    private async Task<ExtractionResult> UploadFileToServer(Stream stream, string fileName, string contentType)
     {
 
         try
@@ -167,7 +198,7 @@
             var response = await Http.PostAsync("api/FileUpload", content);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<UploadedFile>();
+                var result = await response.Content.ReadFromJsonAsync<ExtractionResult>();
                 return result;
             }
             else
@@ -180,7 +211,7 @@
             Console.WriteLine(ex.ToString());
             throw;
         }
-    
+
     }
 
     public class UploadedFile
@@ -195,8 +226,17 @@
         public string Query { get; set; }
     }
 
+    public class ExtractionResult
+    {
+        public string FileName { get; set; }
+        public List<ExtractedParagraph> ExtractedParagraphs { get; set; }
+    }
 
-
-
+    public class ExtractedParagraph
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Content { get; set; }
+    }
 
 }

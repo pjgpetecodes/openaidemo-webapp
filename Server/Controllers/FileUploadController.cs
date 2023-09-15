@@ -88,7 +88,12 @@ namespace YourProjectName.Controllers
                             });
                         }
 
-                        return Ok(extractedParagraphs);
+                        ExtractionResult extractionResults = new ExtractionResult();
+                        extractionResults.FileName = file.FileName;
+                        extractionResults.ExtractedParagraphs = extractedParagraphs;
+
+                        System.Diagnostics.Debug.Print(extractionResults.ToString());
+                        return Ok(extractionResults);
                     }
 
                 }
@@ -100,7 +105,11 @@ namespace YourProjectName.Controllers
             }
         }
 
-
+        public class ExtractionResult
+        {
+            public string FileName { get; set; }
+            public List<ExtractedParagraph> ExtractedParagraphs { get; set; }
+        }
 
         public class ExtractedParagraph
         {
