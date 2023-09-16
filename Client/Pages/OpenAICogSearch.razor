@@ -157,7 +157,7 @@
 
             chatMessages.Add(new OpenAIChatMessage {ChatBubbleId = chatMessageGuid,  Content = chatInput.Query, Type = "human" });
             await JS.InvokeVoidAsync("scrollToBottom", "messages");
-            await hubConnection.SendAsync("SendCogServiceMessage", "human", chatInput.Query);
+            await hubConnection.SendAsync("SendCogServiceQuery", chatInput.Query, chatMessages);
         }
     }  
 

@@ -23,7 +23,7 @@ namespace openaidemo_webapp.Server.Helpers
             messageTimer = new Timer(ProcessQueue, null, 0, 25);
         }
 
-        public async Task<String> QueryOpenAIWithPrompts(String prompt, ISingleClientProxy signalrClient)
+        public async Task<String> QueryOpenAIWithPrompts(String prompt, List<OpenAIChatMessage> previousMessages, ISingleClientProxy signalrClient)
         {
             this.signalrClient = signalrClient;
 
@@ -40,15 +40,38 @@ namespace openaidemo_webapp.Server.Helpers
             var client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(key));
             
             System.Diagnostics.Debug.Print($"Input: {prompt}");
+            // Prepare the Completions Options
             var chatCompletionsOptions = new ChatCompletionsOptions()
             {
                 Messages =
                 {
                     //new ChatMessage(ChatRole.System, "You are a helpful assistant. You will talk like a pirate."),
-                    new ChatMessage(ChatRole.System, "You are a helpful assistant."),
+                    new ChatMessage(ChatRole.System, "You are a helpful assistant"),
                     new ChatMessage(ChatRole.User, prompt),
-                }
+                },
+                Temperature = (float)0,
+                MaxTokens = 800,
+                NucleusSamplingFactor = (float)0.95,
+                FrequencyPenalty = 0,
+                PresencePenalty = 0,
             };
+
+            // Add in the previous messages
+            foreach (var previousMessage in previousMessages)
+            {
+                ChatRole chatRole = ChatRole.User;
+
+                if (previousMessage.Type == "ai")
+                {
+                    chatRole = ChatRole.Assistant;
+                }
+                else if (previousMessage.Type == "human")
+                {
+                    chatRole = ChatRole.User;
+                }
+
+                chatCompletionsOptions.Messages.Add(new ChatMessage(chatRole, previousMessage.Content));
+            }
 
             Response<StreamingChatCompletions> response = await client.GetChatCompletionsStreamingAsync(
                 deploymentOrModelName: deploymentName,
@@ -82,7 +105,7 @@ namespace openaidemo_webapp.Server.Helpers
             return completion;
         }
 
-        public async Task<String> QueryOpenAIWithPromptAndSources(String prompt, List<CognitiveSearchResult> cognitiveSearchResults, ISingleClientProxy signalrClient)
+        public async Task<String> QueryOpenAIWithPromptAndSources(String prompt, List<CognitiveSearchResult> cognitiveSearchResults, List<OpenAIChatMessage> previousMessages, ISingleClientProxy signalrClient)
         {
             this.signalrClient = signalrClient;
 
@@ -120,6 +143,7 @@ namespace openaidemo_webapp.Server.Helpers
                 sourcesPrompt += $"DOC {index}: {source.Content}";
             }
 
+            // Prepare the Completions Options
             var chatCompletionsOptions = new ChatCompletionsOptions()
             {
                 Messages =
@@ -135,6 +159,24 @@ namespace openaidemo_webapp.Server.Helpers
                 PresencePenalty = 0,
             };
 
+            // Add in the previous messages
+            foreach (var previousMessage in previousMessages)
+            {
+                ChatRole chatRole = ChatRole.User;
+
+                if (previousMessage.Type == "ai")
+                {
+                    chatRole = ChatRole.Assistant;
+                }
+                else if (previousMessage.Type == "human")
+                {
+                    chatRole = ChatRole.User;
+                }
+
+                chatCompletionsOptions.Messages.Add(new ChatMessage(chatRole, previousMessage.Content));
+            }
+
+            // Begin the Query
             Response<StreamingChatCompletions> response = await client.GetChatCompletionsStreamingAsync(
                 deploymentOrModelName: deploymentName,
                 chatCompletionsOptions);

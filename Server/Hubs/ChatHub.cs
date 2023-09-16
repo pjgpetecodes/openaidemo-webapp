@@ -18,18 +18,18 @@ namespace openaidemo_webapp.Server.Hubs
             _config = config;
         }
 
-        public async Task SendMessage(string user, string message)
+        public async Task SendQuery(string query, List<OpenAIChatMessage> previousMessages)
         {
             var openAIHelper = new OpenAIHelper(_config);
 
-            var response = await openAIHelper.QueryOpenAIWithPrompts(message, Clients.Caller);
+            var response = await openAIHelper.QueryOpenAIWithPrompts(query, previousMessages, Clients.Caller);
         }
 
-        public async Task SendCogServiceMessage(string user, string message)
+        public async Task SendCogServiceQuery(string query, List<OpenAIChatMessage> previousMessages)
         {
             var cognitiveSearchHelper = new CognitiveSearchHelper(_config);
 
-            List<CognitiveSearchResult> cogSearchResults = await cognitiveSearchHelper.SingleVectorSearch(message);
+            List<CognitiveSearchResult> cogSearchResults = await cognitiveSearchHelper.SingleVectorSearch(query);
 
             CognitiveSearchResults cognitiveSearchResults = new CognitiveSearchResults();
             cognitiveSearchResults.CognitiveSearchResultList = cogSearchResults;
@@ -38,7 +38,7 @@ namespace openaidemo_webapp.Server.Hubs
 
             var openAIHelper = new OpenAIHelper(_config);
 
-            var response = await openAIHelper.QueryOpenAIWithPromptAndSources(message, cogSearchResults, Clients.Caller);
+            var response = await openAIHelper.QueryOpenAIWithPromptAndSources(query, cogSearchResults, previousMessages,  Clients.Caller);
 
 
         }
