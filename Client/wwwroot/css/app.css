@@ -20,7 +20,7 @@ a, .btn-link {
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .content {
@@ -101,34 +101,41 @@ a, .btn-link {
         content: var(--blazor-load-percentage-text, "Loading");
     }
 
- .content {
-     height: 100%;
- }
+.content {
+    height: 100%;
+}
 
+
+.chat-container {
+    height: 90%;
+}
+
+.cognitive-chat-container {
+    height: 80%;
+}
 
 .chat-column {
     width: 70%;
     float: left;
     padding-right: 20px;
+    height: 98%;
 }
 
 .sources-column {
     width: 30%;
     background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
-    height: 650px;
+    height: 100%;
     float: right;
     color: white;
     text-align: center;
     padding: 10px;
 }
 
-.chat-container {
-    height: 800px;
-}
+
 
 .chat-window {
     width: 100%;
-    height: 600px;
+    height: 96%;
     border: 1px solid #ccc;
     overflow-y: scroll;
 }
