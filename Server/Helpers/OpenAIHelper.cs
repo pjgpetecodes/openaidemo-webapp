@@ -130,17 +130,19 @@ namespace openaidemo_webapp.Server.Helpers
             System.Diagnostics.Debug.Print($"Input: {prompt}");
             
             var initPrompt = @"You are an AI Assistant by Pete Codes.
-      Your task is to help Pete Codes.
-      You will be given a question and extracted parts of Microsoft Annual Reports and Shareholders Letters
-      Provide a clear and structured answer based on the context provided.
-      Return the content html encoded.
-      When relevant, use bullet points and lists to structure your answers.";
+                              Your task is to help Pete Codes.
+                              You will be given a question and extracted parts of Microsoft Annual Reports and Shareholders Letters
+                              Provide a clear and structured answer based on the context provided.
+                              Return the content html encoded.
+                              When relevant, use bullet points and lists to structure your answers.";
 
-            var sourcesPrompt = @"When relevant, use facts and numbers from the following documents in your answer.
-      Whenever you use information from a document, reference it at the end of the sentence (ex: [DOC 2]).
-      You don't have to use all documents, only if it makes sense in the conversation.
-      If no relevant information to answer the question is present in the documents,
-      just say you don't have enough information to answer.\n";
+            initPrompt += $"The current date is {DateTime.Now}";
+
+                                    var sourcesPrompt = @"When relevant, use facts and numbers from the following documents in your answer.
+                              Whenever you use information from a document, reference it at the end of the sentence (ex: [DOC 2]).
+                              You don't have to use all documents, only if it makes sense in the conversation.
+                              If no relevant information to answer the question is present in the documents,
+                              just say you don't have enough information to answer.\n";
 
             var index = 0;
             foreach (var source in cognitiveSearchResults)
@@ -186,7 +188,7 @@ namespace openaidemo_webapp.Server.Helpers
             }
 
             // Add the prompt message last  
-            chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, prompt));s
+            chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, prompt));
 
             // Begin the Query
             Response<StreamingChatCompletions> response = await client.GetChatCompletionsStreamingAsync(
