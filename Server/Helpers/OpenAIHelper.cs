@@ -57,7 +57,10 @@ namespace openaidemo_webapp.Server.Helpers
             };
 
             // Add in the previous messages
-            foreach (var previousMessage in previousMessages)
+            int messagesToSkip = previousMessages.Count - 10;
+            if (messagesToSkip < 0) messagesToSkip = 0;
+
+            foreach (var previousMessage in previousMessages.Skip(messagesToSkip))
             {
                 ChatRole chatRole = ChatRole.User;
 
@@ -72,6 +75,9 @@ namespace openaidemo_webapp.Server.Helpers
 
                 chatCompletionsOptions.Messages.Add(new ChatMessage(chatRole, previousMessage.Content));
             }
+
+            // Add the prompt message last  
+            chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, prompt));
 
             Response<StreamingChatCompletions> response = await client.GetChatCompletionsStreamingAsync(
                 deploymentOrModelName: deploymentName,
@@ -160,7 +166,10 @@ namespace openaidemo_webapp.Server.Helpers
             };
 
             // Add in the previous messages
-            foreach (var previousMessage in previousMessages)
+            int messagesToSkip = previousMessages.Count - 10;
+            if (messagesToSkip < 0) messagesToSkip = 0;
+
+            foreach (var previousMessage in previousMessages.Skip(messagesToSkip))
             {
                 ChatRole chatRole = ChatRole.User;
 
@@ -175,6 +184,9 @@ namespace openaidemo_webapp.Server.Helpers
 
                 chatCompletionsOptions.Messages.Add(new ChatMessage(chatRole, previousMessage.Content));
             }
+
+            // Add the prompt message last  
+            chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, prompt));s
 
             // Begin the Query
             Response<StreamingChatCompletions> response = await client.GetChatCompletionsStreamingAsync(
