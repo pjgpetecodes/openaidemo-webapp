@@ -22,5 +22,12 @@ namespace openaidemo_webapp.Server.Hubs
 
             var response = await openAIHelper.QueryOpenAIWithPrompts(message, Clients.Caller);
         }
+
+        public async Task SendCogServiceMessage(string user, string message)
+        {
+            var cognitiveSearchHelper = new CognitiveSearchHelper(_config);
+
+            await cognitiveSearchHelper.SingleVectorSearch(message);
+        }
     }
 }

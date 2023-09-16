@@ -24,6 +24,22 @@ namespace openaidemo_webapp.Server.Helpers
 
         public async Task<ExtractionResult> ExtractParagraphs(Stream stream, String filename)
         {
+            // Get the Company Name from the file name
+            string[] parts = filename.Split('-');
+            string companyName = "";
+            string year = "";
+
+            if (parts.Length >= 3)
+            {
+                companyName = parts[0];
+                year = parts[1];
+            }
+            else
+            {
+                // Handle the case where the filename doesn't follow the expected format  
+            }
+
+            // Extract the paragraphs of text from the document
             using (PdfDocument document = PdfDocument.Open(stream))
             {
                 List<ExtractedParagraph> extractedParagraphs = new List<ExtractedParagraph>();
@@ -54,7 +70,7 @@ namespace openaidemo_webapp.Server.Helpers
                         int wordCount = paragraphContent.Split(' ').Length;
 
                         // If the paragraph has less than 50 words, store it in pendingContent  
-                        if (wordCount < 50)
+                        if (wordCount < 500)
                         {
                             pendingContent = paragraphContent;
                         }
@@ -63,7 +79,8 @@ namespace openaidemo_webapp.Server.Helpers
                             // Add the paragraph to the extractedParagraphs list  
                             extractedParagraphs.Add(new ExtractedParagraph
                             {
-                                Id = $"{pageIndex + 1}.{paragraphIndex + 1}",
+                                Id = Guid.NewGuid().ToString(),
+                                Location = $"{pageIndex + 1}-{paragraphIndex + 1}",
                                 Title = $"Page {pageIndex + 1} - Paragraph {paragraphIndex + 1}",
                                 Content = paragraphContent
                             });
@@ -77,7 +94,8 @@ namespace openaidemo_webapp.Server.Helpers
                 {
                     extractedParagraphs.Add(new ExtractedParagraph
                     {
-                        Id = $"{document.NumberOfPages}.{extractedParagraphs.Count + 1}",
+                        Id = Guid.NewGuid().ToString(),
+                        Location = $"{document.NumberOfPages}-{extractedParagraphs.Count + 1}",
                         Title = $"Page {document.NumberOfPages} - Paragraph {extractedParagraphs.Count + 1}",
                         Content = pendingContent
                     });
@@ -85,6 +103,8 @@ namespace openaidemo_webapp.Server.Helpers
 
                 ExtractionResult extractionResults = new ExtractionResult();
                 extractionResults.FileName = filename;
+                extractionResults.Company = companyName;
+                extractionResults.Year = year;
                 extractionResults.ExtractedParagraphs = extractedParagraphs;
 
                 System.Diagnostics.Debug.Print(extractionResults.ToString());

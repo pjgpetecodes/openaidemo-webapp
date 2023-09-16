@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using openaidemo_webapp.Shared;
 using openaidemo_webapp.Server.Helpers;
+using openaidemo_webapp.Client.Pages;
 
 namespace YourProjectName.Controllers
 {
@@ -37,6 +38,10 @@ namespace YourProjectName.Controllers
                     var pdfHelper = new PDFHelper(_config);
 
                     ExtractionResult extractionResult = await pdfHelper.ExtractParagraphs(stream, file.FileName);
+
+                    var cognitiveSearchHelper = new CognitiveSearchHelper(_config);
+
+                    extractionResult = await cognitiveSearchHelper.CreateOrUpdateIndex(extractionResult); 
 
                     return Ok(extractionResult);
 
