@@ -29,7 +29,7 @@ namespace openaidemo_webapp.Server.Hubs
         {
             var cognitiveSearchHelper = new CognitiveSearchHelper(_config);
 
-            List<CognitiveSearchResult> cogSearchResults = await cognitiveSearchHelper.SingleVectorSearch(query);
+            List<CognitiveSearchResult> cogSearchResults = await cognitiveSearchHelper.SingleVectorSearch(query, 6);
 
             CognitiveSearchResults cognitiveSearchResults = new CognitiveSearchResults();
             cognitiveSearchResults.CognitiveSearchResultList = cogSearchResults;

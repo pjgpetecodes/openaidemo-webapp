@@ -102,7 +102,7 @@ a, .btn-link {
     }
 
 .content {
-    height: 100%;
+    height: 95%;
 }
 
 
@@ -130,8 +130,6 @@ a, .btn-link {
     text-align: center;
     padding: 10px;
 }
-
-
 
 .chat-window {
     width: 100%;

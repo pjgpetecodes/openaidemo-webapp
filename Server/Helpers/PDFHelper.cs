@@ -70,7 +70,7 @@ namespace openaidemo_webapp.Server.Helpers
                         int wordCount = paragraphContent.Split(' ').Length;
 
                         // If the paragraph has less than 50 words, store it in pendingContent  
-                        if (wordCount < 500)
+                        if (wordCount < 250)
                         {
                             pendingContent = paragraphContent;
                         }

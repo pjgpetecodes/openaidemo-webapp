@@ -7,6 +7,8 @@ using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.AspNetCore.SignalR;
 using openaidemo_webapp.Shared;
+using System.Linq;
+using openaidemo_webapp.Client.Pages;
 
 namespace openaidemo_webapp.Server.Helpers
 {
@@ -144,12 +146,20 @@ namespace openaidemo_webapp.Server.Helpers
                               If no relevant information to answer the question is present in the documents,
                               just say you don't have enough information to answer.\n";
 
+
+            // Filter and sort the sources by Score property in descending order  
+            var filteredAndSortedCognitiveSearchResults = cognitiveSearchResults
+                .Where(source => Convert.ToDouble(source.Score) > 0.80)
+                .OrderByDescending(source => source.Score);
+
+            // Add the filtered and sorted sources to the sourcesPrompt  
             var index = 0;
-            foreach (var source in cognitiveSearchResults)
+            foreach (var source in filteredAndSortedCognitiveSearchResults)
             {
                 index++;
                 sourcesPrompt += $"DOC {index}: {source.Content}";
             }
+
 
             // Prepare the Completions Options
             var chatCompletionsOptions = new ChatCompletionsOptions()

@@ -188,7 +188,7 @@ namespace openaidemo_webapp.Server.Helpers
             return searchDocuments;
         }
 
-        public async Task<List<CognitiveSearchResult>> SingleVectorSearch(string query, int k = 3)
+        public async Task<List<CognitiveSearchResult>> SingleVectorSearch(string query, int k = 6)
         {
             try
             {
@@ -216,7 +216,7 @@ namespace openaidemo_webapp.Server.Helpers
                 // Perform the vector similarity search  
                 var searchOptions = new SearchOptions
                 {
-                    Vectors = { new() { Value = queryEmbeddings.ToArray(), KNearestNeighborsCount = 3, Fields = { "contentVector" } } },
+                    Vectors = { new() { Value = queryEmbeddings.ToArray(), KNearestNeighborsCount = 6, Fields = { "contentVector" } } },
                     Size = k,
                     Select = { "title", "content", "company", "location", "fileName" },
                 };
@@ -258,8 +258,6 @@ namespace openaidemo_webapp.Server.Helpers
             }
             
         }
-
-
 
     }
 }
