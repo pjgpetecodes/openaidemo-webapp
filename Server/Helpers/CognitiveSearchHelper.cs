@@ -52,7 +52,7 @@ namespace openaidemo_webapp.Server.Helpers
                 indexClient.CreateOrUpdateIndex(GetIndex(indexName));
 
                 // Create the Vectors for the paragraphs
-                var indexDocuments = await ProcessExtractionsAsync(openAIClient, extractionResult.ExtractedParagraphs);
+                var indexDocuments = await ProcessExtractionsAsync(openAIClient, extractionResult.ExtractedParagraphs, extractionResult.FileName, extractionResult.Company);
                 await searchClient.IndexDocumentsAsync(IndexDocumentsBatch.Upload(indexDocuments));
 
                 // Convert sampleDocuments back to ExtractionResult  
@@ -113,7 +113,8 @@ namespace openaidemo_webapp.Server.Helpers
                            {
                                new() { FieldName = "location" },
                                new() { FieldName = "company" },
-                               new() { FieldName = "year" }
+                               new() { FieldName = "year" },
+                               new() { FieldName = "fileName"}
                            }
 
                        })
@@ -128,6 +129,7 @@ namespace openaidemo_webapp.Server.Helpers
                     new SearchableField("location") { IsFilterable = true, IsSortable = true, IsFacetable = true },
                     new SearchableField("company") { IsFilterable = true, IsSortable = true, IsFacetable = true },
                     new SearchableField("year") { IsFilterable = true, IsSortable = true, IsFacetable = true },
+                    new SearchableField("fileName") { IsFilterable = true, IsSortable = true, IsFacetable = true },
                     new SearchField("titleVector", SearchFieldDataType.Collection(SearchFieldDataType.Single))
                     {
                         IsSearchable = true,
@@ -154,7 +156,7 @@ namespace openaidemo_webapp.Server.Helpers
             return response.Value.Data[0].Embedding;
         }
 
-        internal async Task<List<SearchDocument>> ProcessExtractionsAsync(OpenAIClient openAIClient, List<ExtractedParagraph> extractedParagraphs)
+        internal async Task<List<SearchDocument>> ProcessExtractionsAsync(OpenAIClient openAIClient, List<ExtractedParagraph> extractedParagraphs, String FileName, String Company)
         {
             List<SearchDocument> searchDocuments = new List<SearchDocument>();
 
@@ -171,9 +173,11 @@ namespace openaidemo_webapp.Server.Helpers
                 IDictionary<string, object> extractionDict = new Dictionary<string, object>
                 {
                     { "Id", extraction.Id },
+                    { "FileName", FileName },
                     { "Location", extraction.Location },
                     { "Title", extraction.Title },
                     { "Content", extraction.Content },
+                    { "Company", Company },
                     { "ContentVector", extraction.ContentVector }
                 };
 
@@ -184,7 +188,7 @@ namespace openaidemo_webapp.Server.Helpers
             return searchDocuments;
         }
 
-        public async Task<SearchResults<SearchDocument>> SingleVectorSearch(string query, int k = 3)
+        public async Task<List<CognitiveSearchResult>> SingleVectorSearch(string query, int k = 3)
         {
             try
             {
@@ -214,28 +218,42 @@ namespace openaidemo_webapp.Server.Helpers
                 {
                     Vectors = { new() { Value = queryEmbeddings.ToArray(), KNearestNeighborsCount = 3, Fields = { "contentVector" } } },
                     Size = k,
-                    Select = { "title", "content", "company", "location" },
+                    Select = { "title", "content", "company", "location", "fileName" },
                 };
 
                 SearchResults<SearchDocument> response = await searchClient.SearchAsync<SearchDocument>(null, searchOptions);
 
                 int count = 0;
+                List<CognitiveSearchResult> cognitiveSearchResults = new List<CognitiveSearchResult>();
+
                 await foreach (SearchResult<SearchDocument> result in response.GetResultsAsync())
                 {
                     count++;
+                    
+                    CognitiveSearchResult cognitiveSearchResult = new CognitiveSearchResult();
+                    cognitiveSearchResult.Id = count;
+                    cognitiveSearchResult.FileName = result.Document["fileName"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Title = result.Document["title"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Location = result.Document["location"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Score = result.Score.ToString();
+                    cognitiveSearchResult.Content = result.Document["content"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Company = result.Document["company"].ToString() ?? string.Empty;
+
+                    cognitiveSearchResults.Add(cognitiveSearchResult);
+
                     System.Diagnostics.Debug.Print($"Title: {result.Document["title"]}");
                     System.Diagnostics.Debug.Print($"Location: {result.Document["location"]}\n");
                     System.Diagnostics.Debug.Print($"Score: {result.Score}\n");
                     System.Diagnostics.Debug.Print($"Content: {result.Document["content"]}");
                     System.Diagnostics.Debug.Print($"Company: {result.Document["company"]}\n");
                 }
-                Console.WriteLine($"Total Results: {count}");
 
-                return response;
+                System.Diagnostics.Debug.Print($"Total Results: {count}");
+
+                return cognitiveSearchResults;
             }
             catch (Exception ex)
             {
-
                 throw;
             }
             

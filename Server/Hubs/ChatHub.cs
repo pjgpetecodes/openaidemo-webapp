@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Microsoft.AspNetCore.SignalR;
 using openaidemo_webapp.Server.Helpers;
+using openaidemo_webapp.Shared;
 
 namespace openaidemo_webapp.Server.Hubs
 {
@@ -27,7 +29,12 @@ namespace openaidemo_webapp.Server.Hubs
         {
             var cognitiveSearchHelper = new CognitiveSearchHelper(_config);
 
-            await cognitiveSearchHelper.SingleVectorSearch(message);
+            List<CognitiveSearchResult> cogSearchResults = await cognitiveSearchHelper.SingleVectorSearch(message);
+
+            CognitiveSearchResults cognitiveSearchResults = new CognitiveSearchResults();
+            cognitiveSearchResults.CognitiveSearchResultList = cogSearchResults;
+
+            await Clients.Caller.SendAsync("CognitiveSearchResults", cognitiveSearchResults);
         }
     }
 }

@@ -14,9 +14,16 @@
     .SourceCard h3 {
         margin: 0 0 0.5em;
         font-size: 1.2em;
+        color: black;
     }
 
     .SourceCard h4 {
+        margin: 0 0 1em;
+        font-size: 0.9em;
+        color: #6c757d;
+    }
+
+    .SourceCard h5 {
         margin: 0 0 1em;
         font-size: 0.9em;
         color: #6c757d;
@@ -34,6 +41,7 @@
     max-height: 3.6em;
     line-height: 1.2em;
     padding-right: 1em;
+    color: black;
 }
 
     .SourceCardText:after {
@@ -57,8 +65,9 @@
 
 .LoaderContainer {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 400px;
+    height: 600px;
     // Set the height equal to the max-height of the scrollable container width: 100%;
 }

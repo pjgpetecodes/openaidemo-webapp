@@ -1,39 +1,45 @@
 ﻿@inherits ComponentBase
 @using Microsoft.AspNetCore.Components
+@using openaidemo_webapp.Shared;
+@using MudBlazor;
 
 @if (isLoading)
 {
     <div class="LoaderContainer">
         <!-- Use Loader component for an animated spinner -->
-        <p>Loading sources...</p>
+       <div class="LoaderContainer">
+            <p><MudProgressCircular Color="Color.Success" Indeterminate="true" /></p>
+        <p>Loading sources...</p>  
+    </div>  
     </div>
 }
 else
 {
     <div class="ChatSourcesContent">
-        @for (int i = 0; i < sourcesItems.Count; i++)
+        @for (int i = 0; i < SourcesItems.Count; i++)
         {
             var index = i;
+            var locationParts = SourcesItems[index].Location.Split('-');
             <div class="@(expandedCards[index] ? "SourceCard expanded" : "SourceCard")"
             @onclick="@(() => ToggleCard(index))">
                 <h3>DOC @(index + 1)</h3>
-                <h4>@sourcesItems[index].m_doc_id</h4>
-                <div class="SourceCardText" @((MarkupString)sourcesItems[index].content)>
-                </div>
+                <h4>@SourcesItems[index].FileName</h4>
+                <h5>Page @locationParts[0] - Paragraph @locationParts[1]</h5>
+                <div class="SourceCardText">@((MarkupString)SourcesItems[index].Content)</div>
             </div>
         }
     </div>
 }
 
 @code {
-    [Parameter] public List<dynamic> sourcesItems { get; set; }
+    [Parameter] public List<CognitiveSearchResult> SourcesItems { get; set; }
     [Parameter] public bool isLoading { get; set; }
     private List<bool> expandedCards;
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        expandedCards = new List<bool>(new bool[sourcesItems.Count]);
+        expandedCards = new List<bool>(new bool[SourcesItems.Count]);
     }
 
     private void ToggleCard(int index)

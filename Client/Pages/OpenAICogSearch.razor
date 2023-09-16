@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.AspNetCore.Components.Forms
 @using openaidemo_webapp.Client.Components.ChatBubble
+@using openaidemo_webapp.Client.Components.Sources
 @using openaidemo_webapp.Shared
 @using System.Net.Http
 @using System.Net.Http.Json
@@ -81,7 +82,7 @@
     </div>
     <div class="sources-column">
         <h3>Sources</h3>
-
+       <Sources SourcesItems="cognitiveSearchResults" isLoading="isLoading"/>
     </div>
 </div>
 
@@ -92,8 +93,9 @@
     private List<OpenAIChatMessage> chatMessages = new List<OpenAIChatMessage>();
     private ElementReference messagesDiv;
     IList<IBrowserFile> uploadedFiles = new List<IBrowserFile>();
-    List<ExtractionResult> extractionResults = new List<ExtractionResult>();
-
+    private List<ExtractionResult> extractionResults = new List<ExtractionResult>();
+    List<CognitiveSearchResult> cognitiveSearchResults = new List<CognitiveSearchResult>();
+    private bool isLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -101,17 +103,6 @@
         .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
         .WithAutomaticReconnect()
         .Build();
-
-        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
-        {
-            /*
-            var encodedMsg = $"{user}: {message}";
-            chatMessages.Add(new ChatBubbleMessage { ChatBubbleId =  new Guid().ToString(), Content = message, Type = "ai" });
-            chatInput.Query = string.Empty;
-            StateHasChanged();
-            */
-
-        });
 
         hubConnection.On < string, string, string, bool> ("ReceiveMessageToken", async (chatBubbleId, user, messageToken, isTemporaryResponse) =>
         {
@@ -139,6 +130,13 @@
             StateHasChanged();
         });
 
+        hubConnection.On<CognitiveSearchResults>("CognitiveSearchResults", (cogSearchResults) =>
+        {
+            isLoading = false;
+            cognitiveSearchResults = (List<CognitiveSearchResult>)cogSearchResults.CognitiveSearchResultList;
+            StateHasChanged();
+        });
+
         await hubConnection.StartAsync();
     }
 
@@ -154,6 +152,7 @@
     {
         if (!string.IsNullOrWhiteSpace(chatInput.Query))
         {
+            isLoading = true;
             String chatMessageGuid = System.Guid.NewGuid().ToString();
 
             chatMessages.Add(new OpenAIChatMessage {ChatBubbleId = chatMessageGuid,  Content = chatInput.Query, Type = "human" });
