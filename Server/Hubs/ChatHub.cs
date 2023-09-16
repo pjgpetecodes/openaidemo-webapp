@@ -35,6 +35,12 @@ namespace openaidemo_webapp.Server.Hubs
             cognitiveSearchResults.CognitiveSearchResultList = cogSearchResults;
 
             await Clients.Caller.SendAsync("CognitiveSearchResults", cognitiveSearchResults);
+
+            var openAIHelper = new OpenAIHelper(_config);
+
+            var response = await openAIHelper.QueryOpenAIWithPromptAndSources(message, cogSearchResults, Clients.Caller);
+
+
         }
     }
 }
