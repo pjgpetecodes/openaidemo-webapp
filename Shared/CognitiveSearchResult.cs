@@ -18,6 +18,7 @@ namespace openaidemo_webapp.Shared
         public string Score { get; set; }
         public string Content { get; set; }
         public string Company { get; set; }
+        public string Year { get; set; }
 
     }
 }

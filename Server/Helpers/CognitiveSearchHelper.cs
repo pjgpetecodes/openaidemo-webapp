@@ -24,6 +24,9 @@ namespace openaidemo_webapp.Server.Helpers
             _config = config;
         }
 
+        //
+        // Create or Update an Index for the supplied PDF Extraction Results
+        //
         public async Task<ExtractionResult> CreateOrUpdateIndex(ExtractionResult extractionResult)
         {
 
@@ -52,7 +55,7 @@ namespace openaidemo_webapp.Server.Helpers
                 indexClient.CreateOrUpdateIndex(GetIndex(indexName));
 
                 // Create the Vectors for the paragraphs
-                var indexDocuments = await ProcessExtractionsAsync(openAIClient, extractionResult.ExtractedParagraphs, extractionResult.FileName, extractionResult.Company);
+                var indexDocuments = await ProcessExtractionsAsync(openAIClient, extractionResult.ExtractedParagraphs, extractionResult.FileName, extractionResult.Company, extractionResult.Year);
                 await searchClient.IndexDocumentsAsync(IndexDocumentsBatch.Upload(indexDocuments));
 
                 // Convert sampleDocuments back to ExtractionResult  
@@ -85,42 +88,51 @@ namespace openaidemo_webapp.Server.Helpers
 
         }
 
+        //
+        // Get a SearchIndex object with the specified name.  
+        //
         internal static SearchIndex GetIndex(string name)
         {
+            // Define the name of the vector search configuration.  
             string vectorSearchConfigName = "my-vector-config";
 
+            // Create a new SearchIndex object with the specified name.  
             SearchIndex searchIndex = new(name)
             {
+                // Configure the vector search settings.  
                 VectorSearch = new()
                 {
                     AlgorithmConfigurations =
-                    {
+                    {  
+                        // Use the HNSW vector search algorithm with the specified configuration name.  
                         new HnswVectorSearchAlgorithmConfiguration(vectorSearchConfigName)
                     }
                 },
+                // Configure the semantic search settings.  
                 SemanticSettings = new()
                 {
                     Configurations =
                     {
-                       new SemanticConfiguration(SemanticSearchConfigName, new()
-                       {
-                           TitleField = new(){ FieldName = "title" },
-                           ContentFields =
-                           {
-                               new() { FieldName = "content" }
-                           },
-                           KeywordFields =
-                           {
-                               new() { FieldName = "location" },
-                               new() { FieldName = "company" },
-                               new() { FieldName = "year" },
-                               new() { FieldName = "fileName"}
-                           }
+                        new SemanticConfiguration(SemanticSearchConfigName, new()
+                        {  
+                            // Define the fields used in semantic search.  
+                            TitleField = new(){ FieldName = "title" },
+                            ContentFields =
+                            {
+                                new() { FieldName = "content" }
+                            },
+                            KeywordFields =
+                            {
+                                new() { FieldName = "location" },
+                                new() { FieldName = "company" },
+                                new() { FieldName = "year" },
+                                new() { FieldName = "fileName"}
+                            }
 
-                       })
-
+                        })
                     },
                 },
+                // Define the fields used in the search index.  
                 Fields =
                 {
                     new SimpleField("id", SearchFieldDataType.String) { IsKey = true, IsFilterable = true, IsSortable = true, IsFacetable = true },
@@ -129,7 +141,8 @@ namespace openaidemo_webapp.Server.Helpers
                     new SearchableField("location") { IsFilterable = true, IsSortable = true, IsFacetable = true },
                     new SearchableField("company") { IsFilterable = true, IsSortable = true, IsFacetable = true },
                     new SearchableField("year") { IsFilterable = true, IsSortable = true, IsFacetable = true },
-                    new SearchableField("fileName") { IsFilterable = true, IsSortable = true, IsFacetable = true },
+                    new SearchableField("fileName") { IsFilterable = true, IsSortable = true, IsFacetable = true },  
+                    // Configure the vector search fields for title and content.  
                     new SearchField("titleVector", SearchFieldDataType.Collection(SearchFieldDataType.Single))
                     {
                         IsSearchable = true,
@@ -145,18 +158,14 @@ namespace openaidemo_webapp.Server.Helpers
                 }
             };
 
+            // Return the configured SearchIndex object.  
             return searchIndex;
         }
 
-        private async Task<IReadOnlyList<float>> GenerateEmbeddings(string text, OpenAIClient openAIClient)
-        {
-            var embeddingModelDeploymentName = _config["OpenAI:EmbedDeploymentName"];
-
-            var response = await openAIClient.GetEmbeddingsAsync(embeddingModelDeploymentName, new EmbeddingsOptions(text));
-            return response.Value.Data[0].Embedding;
-        }
-
-        internal async Task<List<SearchDocument>> ProcessExtractionsAsync(OpenAIClient openAIClient, List<ExtractedParagraph> extractedParagraphs, String FileName, String Company)
+        //
+        // Generate Embeddings for all of the extracted PDF Paragraphs
+        //
+        internal async Task<List<SearchDocument>> ProcessExtractionsAsync(OpenAIClient openAIClient, List<ExtractedParagraph> extractedParagraphs, String FileName, String Company, String Year)
         {
             List<SearchDocument> searchDocuments = new List<SearchDocument>();
 
@@ -169,7 +178,7 @@ namespace openaidemo_webapp.Server.Helpers
 
                 extraction.ContentVector = contentEmbeddings;
 
-                // Create a dictionary from the ExtractedParagraph object  
+                // Create a dictionary from the Extracted Paragraph object  
                 IDictionary<string, object> extractionDict = new Dictionary<string, object>
                 {
                     { "Id", extraction.Id },
@@ -178,20 +187,36 @@ namespace openaidemo_webapp.Server.Helpers
                     { "Title", extraction.Title },
                     { "Content", extraction.Content },
                     { "Company", Company },
+                    { "Year", Year },
                     { "ContentVector", extraction.ContentVector }
                 };
 
-                // Pass the dictionary to the SearchDocument constructor  
+                // Create a new Cognitive Search Search Document from the Extracted Paragraph
                 searchDocuments.Add(new SearchDocument(extractionDict));
             }
 
             return searchDocuments;
         }
 
+        //
+        // Generate OpenAI Embeddings for the given text
+        //
+        private async Task<IReadOnlyList<float>> GenerateEmbeddings(string text, OpenAIClient openAIClient)
+        {
+            var embeddingModelDeploymentName = _config["OpenAI:EmbedDeploymentName"];
+
+            var response = await openAIClient.GetEmbeddingsAsync(embeddingModelDeploymentName, new EmbeddingsOptions(text));
+            return response.Value.Data[0].Embedding;
+        }
+
+        //
+        // Perform a single Vector Search against the supplied query string
+        //
         public async Task<List<CognitiveSearchResult>> SingleVectorSearch(string query, int k = 6)
         {
             try
             {
+                // Cognitive Search Environment Variables
                 var cognitiveSearchKey = _config["CognitiveSearch:Key"] ?? string.Empty;
                 var cognitiveSearchEndpoint = $"https://{_config["CognitiveSearch:InstanceName"]}.search.windows.net";
                 var indexName = _config["CognitiveSearch:IndexName"] ?? string.Empty;
@@ -218,7 +243,7 @@ namespace openaidemo_webapp.Server.Helpers
                 {
                     Vectors = { new() { Value = queryEmbeddings.ToArray(), KNearestNeighborsCount = 6, Fields = { "contentVector" } } },
                     Size = k,
-                    Select = { "title", "content", "company", "location", "fileName" },
+                    Select = { "title", "content", "company", "location", "fileName", "year" },
                 };
 
                 SearchResults<SearchDocument> response = await searchClient.SearchAsync<SearchDocument>(null, searchOptions);
@@ -238,14 +263,16 @@ namespace openaidemo_webapp.Server.Helpers
                     cognitiveSearchResult.Score = result.Score.ToString();
                     cognitiveSearchResult.Content = result.Document["content"].ToString() ?? string.Empty;
                     cognitiveSearchResult.Company = result.Document["company"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Year = result.Document["year"].ToString() ?? string.Empty;
 
                     cognitiveSearchResults.Add(cognitiveSearchResult);
 
                     System.Diagnostics.Debug.Print($"Title: {result.Document["title"]}");
                     System.Diagnostics.Debug.Print($"Location: {result.Document["location"]}\n");
                     System.Diagnostics.Debug.Print($"Score: {result.Score}\n");
-                    System.Diagnostics.Debug.Print($"Content: {result.Document["content"]}");
+                    System.Diagnostics.Debug.Print($"Content: {result.Document["content"]}\n");
                     System.Diagnostics.Debug.Print($"Company: {result.Document["company"]}\n");
+                    System.Diagnostics.Debug.Print($"Year: {result.Document["year"]}\n");
                 }
 
                 System.Diagnostics.Debug.Print($"Total Results: {count}");
