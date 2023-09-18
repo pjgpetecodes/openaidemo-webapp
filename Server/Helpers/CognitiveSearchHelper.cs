@@ -253,7 +253,7 @@ namespace openaidemo_webapp.Server.Helpers
 
                     if (year != "")
                     {
-                        searchOptions.Filter = $" and year eq '{year}'";
+                        searchOptions.Filter += $" and year eq '{year}'";
 
                     }
                 }

@@ -106,7 +106,8 @@
             <div class="col-sm text-center">
                 <h3>Chat</h3>
             </div>
-            <div class="col-sm">
+            <div class="col-sm justify-content-end">
+                <MudCheckBox @bind-Checked="includePreviousMessages" Class="include-previous-messages">Include Previous Messages</MudCheckBox>
             </div>
         </div>
         <div class="chat-row row">
@@ -159,6 +160,7 @@
     private string SelectedYear { get; set; } = "";
     private List<string> Companies { get; set; } = new List<string> { "Microsoft", "Amazon", "Google" };
     private List<int> Years { get; set; } = Enumerable.Range(2001, 25).ToList();
+    private bool includePreviousMessages = true;
 
     //
     // Initialise the SignalR connection when the page loads
@@ -233,12 +235,16 @@
     {
         if (!string.IsNullOrWhiteSpace(chatInput.Query))
         {
+            cognitiveSearchResults = new List<CognitiveSearchResult>();
             isLoading = true;
             String chatMessageGuid = System.Guid.NewGuid().ToString();
 
+            List<OpenAIChatMessage> previousMessages = new List<OpenAIChatMessage>();
+            previousMessages.AddRange(chatMessages);
+
             chatMessages.Add(new OpenAIChatMessage {ChatBubbleId = chatMessageGuid,  Content = chatInput.Query, Type = "human" });
             await JS.InvokeVoidAsync("scrollToBottom", "messages");
-            await hubConnection.SendAsync("SendCogServiceQuery", chatInput.Query, chatMessages, SelectedCompany, SelectedYear);
+            await hubConnection.SendAsync("SendCogServiceQuery", chatInput.Query, includePreviousMessages ? previousMessages : new List<OpenAIChatMessage>(), SelectedCompany, SelectedYear);
         }
     }  
 

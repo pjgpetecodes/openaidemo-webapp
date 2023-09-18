@@ -172,3 +172,7 @@ a, .btn-link {
     //padding: 10px;
     //margin: 20px;
 }
+
+.include-previous-messages {
+    justify-content: right;
+}

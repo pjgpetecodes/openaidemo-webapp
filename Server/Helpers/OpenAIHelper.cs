@@ -150,7 +150,7 @@ namespace openaidemo_webapp.Server.Helpers
             
             var initPrompt = @"You are an AI Assistant by Pete Codes who is an expert in Accounting, Shareholding and Management.
                               Your task is to help Pete Codes gain insights from the financial documents.
-                              You will be given a question and extracted parts of Microsoft Annual Reports and Shareholders Letters
+                              You will be given a question and extracted parts of Annual Reports and Shareholders Letters
                               Provide a clear and structured answer based on the context provided.
                               Return any tables and relevant content as html.
                               When relevant, use bullet points and lists to structure your answers.";
@@ -196,25 +196,29 @@ namespace openaidemo_webapp.Server.Helpers
                 PresencePenalty = 0,
             };
 
-            // Add in the previous messages
-            int messagesToSkip = previousMessages.Count - 10;
-            if (messagesToSkip < 0) messagesToSkip = 0;
-
-            foreach (var previousMessage in previousMessages.Skip(messagesToSkip))
+            // If there are previous messages, then include up to 10 of them
+            if (previousMessages.Count > 0)
             {
-                ChatRole chatRole = ChatRole.User;
+                // Add in the previous messages
+                int messagesToSkip = previousMessages.Count - 10;
+                if (messagesToSkip < 0) messagesToSkip = 0;
 
-                if (previousMessage.Type == "ai")
+                foreach (var previousMessage in previousMessages.Skip(messagesToSkip))
                 {
-                    chatRole = ChatRole.Assistant;
-                }
-                else if (previousMessage.Type == "human")
-                {
-                    chatRole = ChatRole.User;
-                }
+                    ChatRole chatRole = ChatRole.User;
 
-                chatCompletionsOptions.Messages.Add(new ChatMessage(chatRole, previousMessage.Content));
-            }
+                    if (previousMessage.Type == "ai")
+                    {
+                        chatRole = ChatRole.Assistant;
+                    }
+                    else if (previousMessage.Type == "human")
+                    {
+                        chatRole = ChatRole.User;
+                    }
+
+                    chatCompletionsOptions.Messages.Add(new ChatMessage(chatRole, previousMessage.Content));
+                }
+            }            
 
             // Add the prompt message last  
             chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, prompt));
