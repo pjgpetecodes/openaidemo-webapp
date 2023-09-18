@@ -116,11 +116,17 @@ a, .btn-link {
 }
 
 .cognitive-chat-container {
-    height: 71%;
+    height: calc(100vh - 23.5rem);
 }
 
 .chat-row {
     height: 94%;
+}
+
+.chat-input-row.row {
+    width: 100%;
+    margin-left: 0px;
+    margin-right: 0px;
 }
 
 .file-upload-container, .filters-container, .cognitive-chat-container {
@@ -135,7 +141,7 @@ a, .btn-link {
     width: 70%;
     float: left;
     padding-right: 20px;
-    height: 98%;
+    height: 97%;
 }
 
 .sources-column {
@@ -153,6 +159,13 @@ a, .btn-link {
     height: 96%;
     border: 1px solid #ccc;
     overflow-y: scroll;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+.chat-input-form {
+    padding-left: 0px;
+    padding-right: 0px;
 }
 
 .mud-card-content.extraction-results {

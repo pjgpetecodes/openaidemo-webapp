@@ -99,14 +99,19 @@
     </div>
 
     <div class="cognitive-chat-container row container">
-        <div class="row">
-            <div class="col text-center">
+        <div class="cognitive-chat-header-row row">
+            <div class="col-sm">
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="HandleClearChat">Clear Chat</MudButton>
+            </div>
+            <div class="col-sm text-center">
                 <h3>Chat</h3>
+            </div>
+            <div class="col-sm">
             </div>
         </div>
         <div class="chat-row row">
-            <div class="chat-column">
-                <div id="messages" class="chat-window" @ref="messagesDiv">
+            <div class="chat-column col-5">
+                <div id="messages" class="chat-window row" @ref="messagesDiv">
                     <div class="chat-message" style="margin-bottom: 10px;">
 
                         @foreach (var message in chatMessages)
@@ -117,15 +122,16 @@
                     </div>
                 </div>
 
-                <EditForm Model="chatInput" OnValidSubmit="SendCogServiceQuery">
-                    <div class="input-group" style="margin-top: 10px;">
-                        <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
-                    </div>
-                </EditForm>
-
+                <div class="chat-input-row row">
+                    <EditForm Model="chatInput" OnValidSubmit="SendCogServiceQuery" class="chat-input-form">
+                        <div class="input-group" style="margin-top: 10px;">
+                            <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
+                        </div>
+                    </EditForm>
+                </div>
             </div>
-            <div class="sources-column">
+            <div class="sources-column col-sm">
                 <h3>Sources</h3>
                 <Sources SourcesItems="cognitiveSearchResults" isLoading="isLoading" />
             </div>
@@ -247,6 +253,14 @@
         // {
         //     await SendQuery();
         // }
+    }
+
+    //
+    // Clear the Chat Window
+    //
+    private async Task HandleClearChat()
+    {
+        chatMessages.Clear();
     }
 
     //
