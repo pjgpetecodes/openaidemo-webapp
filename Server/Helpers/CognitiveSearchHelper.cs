@@ -212,7 +212,7 @@ namespace openaidemo_webapp.Server.Helpers
         //
         // Perform a single Vector Search against the supplied query string
         //
-        public async Task<List<CognitiveSearchResult>> SingleVectorSearch(string query, int k = 6)
+        public async Task<List<CognitiveSearchResult>> SingleVectorSearch(string query, int k = 6, string company = "", string year = "")
         {
             try
             {
@@ -245,6 +245,22 @@ namespace openaidemo_webapp.Server.Helpers
                     Size = k,
                     Select = { "title", "content", "company", "location", "fileName", "year" },
                 };
+
+                // Add any filters passed in
+                if (company != "")
+                {
+                    searchOptions.Filter = $"company eq '{company}'";
+
+                    if (year != "")
+                    {
+                        searchOptions.Filter = $" and year eq '{year}'";
+
+                    }
+                }
+                else if (year != "")
+                {
+                    searchOptions.Filter = $"year eq '{year}'";
+                }
 
                 SearchResults<SearchDocument> response = await searchClient.SearchAsync<SearchDocument>(null, searchOptions);
 

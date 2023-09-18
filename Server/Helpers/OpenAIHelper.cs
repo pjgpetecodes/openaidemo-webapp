@@ -139,7 +139,7 @@ namespace openaidemo_webapp.Server.Helpers
             string endpoint = $"https://{instanceName}.openai.azure.com/";
             string deploymentName = _config["OpenAI:DeploymentName"] ?? string.Empty;
 
-            // Generating a GUID for this message and send a temporary holoding message
+            // Generating a GUID for this message and send a temporary holding message
             String responseGuid = System.Guid.NewGuid().ToString();
             await signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", "...", true);
 
@@ -152,7 +152,7 @@ namespace openaidemo_webapp.Server.Helpers
                               Your task is to help Pete Codes gain insights from the financial documents.
                               You will be given a question and extracted parts of Microsoft Annual Reports and Shareholders Letters
                               Provide a clear and structured answer based on the context provided.
-                              Return the content as html including any tables where relevant.
+                              Return any tables and relevant content as html.
                               When relevant, use bullet points and lists to structure your answers.";
 
             initPrompt += $"The current date is {DateTime.Now.ToShortDateString()}";

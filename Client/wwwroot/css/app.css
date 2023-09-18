@@ -110,8 +110,13 @@ a, .btn-link {
     height: 90%;
 }
 
+.chat-row {
+    height: 100%;
+}
+
 .cognitive-chat-container {
-    height: 80%;
+    height: 65%;
+    margin-top: 10px;
 }
 
 .chat-column {

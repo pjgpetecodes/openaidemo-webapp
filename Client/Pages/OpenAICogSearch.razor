@@ -17,73 +17,121 @@
 
 <h1>Azure OpenAI Cognitive Search</h1>
 
-<div class="file-upload-container">
-    <p>Upload Files for Indexing</p>
-    <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".pdf" FilesChanged="UploadFiles">
-    <ButtonTemplate>
-        <MudButton HtmlTag="label"
-                   Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.CloudUpload"
-                   for="@context">
-            Upload Documents
-        </MudButton>
-    </ButtonTemplate>
-</MudFileUpload>
+<div class="file-upload-container container">
+    <div class="row">
+        <div class="col text-center">
+            <h3>Upload Files for Indexing</h3>
+            <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".pdf" FilesChanged="UploadFiles">
+                <ButtonTemplate>
+                    <MudButton HtmlTag="label"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.CloudUpload"
+                               for="@context">
+                        Upload Documents
+                    </MudButton>
+                </ButtonTemplate>
+            </MudFileUpload>
+        </div>
+    </div>
 
-    @if (extractionResults != null)
-    {
-        <MudList>
-            @foreach (var extractionResult in extractionResults)
-            {
-                <MudExpansionPanel Icon="@Icons.Material.Filled.AttachFile" Text="@extractionResult.FileName">
-                    <ChildContent>
-                        <MudList>
-                            @foreach (var extractedParagraph in extractionResult.ExtractedParagraphs)
-                            {
-                                <MudListItem>
-                                    <MudCard>
-                                        <MudCardContent class="extraction-results">
-                                            <MudText Typo="Typo.h6">@extractedParagraph.Title</MudText>
-                                            <MudText><code>@extractedParagraph.Content</code></MudText>
-                                        </MudCardContent>
-                                    </MudCard>
-                                </MudListItem>
-                            }
-                        </MudList>
-                    </ChildContent>
-                </MudExpansionPanel>
-            }
-        </MudList>
-    }
+    <div class="extraction-results-row row">
+        @if (extractionResults != null)
+        {
+            <MudList>
+                @foreach (var extractionResult in extractionResults)
+                {
+                    <MudExpansionPanel Icon="@Icons.Material.Filled.AttachFile" Text="@extractionResult.FileName">
+                        <ChildContent>
+                            <MudList>
+                                @foreach (var extractedParagraph in extractionResult.ExtractedParagraphs)
+                                {
+                                    <MudListItem>
+                                        <MudCard>
+                                            <MudCardContent class="extraction-results">
+                                                <MudText Typo="Typo.h6">@extractedParagraph.Title</MudText>
+                                                <MudText><code>@extractedParagraph.Content</code></MudText>
+                                            </MudCardContent>
+                                        </MudCard>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                }
+            </MudList>
+        }
+    </div>    
 </div>
 
-<div class="cognitive-chat-container">
-    <p>Chat</p>
-    <div class="chat-column">
-        <div id="messages" class="chat-window" @ref="messagesDiv">
-            <div class="chat-message" style="margin-bottom: 10px;">
-
-                @foreach (var message in chatMessages)
-                {
-                    <ChatBubble Message="message" />
-                }
-
+<div class="filters-container container">
+    <div class="row">
+        <div class="col text-center">
+            <h3>Filters</h3>
+        </div>
+    </div>
+    <div class="filters-row row justify-content-center">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="company">Company:</label>
+                <select id="company" class="form-control" @bind="SelectedCompany">
+                    <option value="">Select a company</option>
+                    @foreach (var company in Companies)
+                    {
+                        <option value="@company">@company</option>
+                    }
+                </select>
             </div>
         </div>
-
-        <EditForm Model="chatInput" OnValidSubmit="SendCogServiceQuery">
-            <div class="input-group" style="margin-top: 10px;">
-                <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
-                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="year">Year:</label>
+                <select id="year" class="form-control" @bind="SelectedYear">
+                    <option value="">Select a year</option>
+                    @foreach (var year in Years)
+                    {
+                        <option value="@year">@year</option>
+                    }
+                </select>
             </div>
-        </EditForm>
+        </div>
+    </div>
+</div>
 
+<div class="cognitive-chat-container container">
+    <div class="row">
+        <div class="col text-center">
+            <h3>Chat</h3>
+        </div>
     </div>
-    <div class="sources-column">
-        <h3>Sources</h3>
-       <Sources SourcesItems="cognitiveSearchResults" isLoading="isLoading"/>
+    <div class="chat-row row">
+        <div class="chat-column">
+            <div id="messages" class="chat-window" @ref="messagesDiv">
+                <div class="chat-message" style="margin-bottom: 10px;">
+
+                    @foreach (var message in chatMessages)
+                    {
+                        <ChatBubble Message="message" />
+                    }
+
+                </div>
+            </div>
+
+            <EditForm Model="chatInput" OnValidSubmit="SendCogServiceQuery">
+                <div class="input-group" style="margin-top: 10px;">
+                    <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
+                </div>
+            </EditForm>
+
+        </div>
+        <div class="sources-column">
+            <h3>Sources</h3>
+            <Sources SourcesItems="cognitiveSearchResults" isLoading="isLoading" />
+        </div>
     </div>
+
+    
 </div>
 
 @code {
@@ -97,6 +145,15 @@
     List<CognitiveSearchResult> cognitiveSearchResults = new List<CognitiveSearchResult>();
     private bool isLoading = false;
 
+    // Filters
+    private string SelectedCompany { get; set; } = "";
+    private string SelectedYear { get; set; } = "";
+    private List<string> Companies { get; set; } = new List<string> { "Microsoft", "Amazon", "Google" };
+    private List<int> Years { get; set; } = Enumerable.Range(2001, 25).ToList();
+
+    //
+    // Initialise the SignalR connection when the page loads
+    //
     protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder()
@@ -104,6 +161,9 @@
         .WithAutomaticReconnect()
         .Build();
 
+        //
+        // An OpenAI Message Token has been received
+        //
         hubConnection.On < string, string, string, bool> ("ReceiveMessageToken", async (chatBubbleId, user, messageToken, isTemporaryResponse) =>
         {
             // Find the chat message with the supplied chatBubbleId
@@ -130,6 +190,9 @@
             StateHasChanged();
         });
 
+        //
+        // The Cognitive Search results have been received
+        //
         hubConnection.On<CognitiveSearchResults>("CognitiveSearchResults", (cogSearchResults) =>
         {
             isLoading = false;
@@ -140,14 +203,23 @@
         await hubConnection.StartAsync();
     }
 
+    //
+    // Track if we're still connected to the SignalR hub
+    //
     public bool IsConnected =>
     hubConnection.State == HubConnectionState.Connected;
 
+    //
+    // Close the connection to the SignalR Hub when the page is closed
+    //
     public async ValueTask DisposeAsync()
     {
         await hubConnection.DisposeAsync();
     }
 
+    //
+    // Send a Cognitive Search Query
+    //
     private async Task SendCogServiceQuery()
     {
         if (!string.IsNullOrWhiteSpace(chatInput.Query))
@@ -157,10 +229,15 @@
 
             chatMessages.Add(new OpenAIChatMessage {ChatBubbleId = chatMessageGuid,  Content = chatInput.Query, Type = "human" });
             await JS.InvokeVoidAsync("scrollToBottom", "messages");
-            await hubConnection.SendAsync("SendCogServiceQuery", chatInput.Query, chatMessages);
+            await hubConnection.SendAsync("SendCogServiceQuery", chatInput.Query, chatMessages, SelectedCompany, SelectedYear);
         }
     }  
 
+    //
+    // Handle the Enter key being pressed and send a query
+    //
+    // (Unused: Handled by markup)
+    //
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         // if (e.Key == "Enter")
@@ -169,6 +246,9 @@
         // }
     }
 
+    //
+    // Upload the selected files to the Server for processing and ingress into Cognitive Search.
+    //
     private async void UploadFiles(IReadOnlyList<IBrowserFile> files)
     {
         foreach (var file in files)
@@ -189,6 +269,9 @@
         Console.WriteLine("File Upload Complete");
     }
 
+    //
+    // Upload a file to the Server
+    //
     private async Task<ExtractionResult> UploadFileToServer(Stream stream, string fileName, string contentType)
     {
 
@@ -217,6 +300,9 @@
 
     }
 
+    //
+    // The Uploaded File Class
+    //
     public class UploadedFile
     {
         public string FileName { get; set; }
@@ -224,6 +310,9 @@
         // Add any other properties needed to represent the uploaded file
     }
 
+    //
+    // Chat input class
+    //
     public class ChatInput
     {
         public string Query { get; set; }

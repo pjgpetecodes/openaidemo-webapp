@@ -25,11 +25,11 @@ namespace openaidemo_webapp.Server.Hubs
             var response = await openAIHelper.QueryOpenAIWithPrompts(query, previousMessages, Clients.Caller);
         }
 
-        public async Task SendCogServiceQuery(string query, List<OpenAIChatMessage> previousMessages)
+        public async Task SendCogServiceQuery(string query, List<OpenAIChatMessage> previousMessages, string company, string year)
         {
             var cognitiveSearchHelper = new CognitiveSearchHelper(_config);
 
-            List<CognitiveSearchResult> cogSearchResults = await cognitiveSearchHelper.SingleVectorSearch(query, 6);
+            List<CognitiveSearchResult> cogSearchResults = await cognitiveSearchHelper.SingleVectorSearch(query, 6, company, year);
 
             CognitiveSearchResults cognitiveSearchResults = new CognitiveSearchResults();
             cognitiveSearchResults.CognitiveSearchResultList = cogSearchResults;
