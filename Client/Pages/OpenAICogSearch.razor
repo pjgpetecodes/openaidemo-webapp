@@ -15,124 +15,127 @@
 
 <PageTitle>Azure OpenAI Cognitive Search</PageTitle>
 
-<h1>Azure OpenAI Cognitive Search</h1>
+<div class="main-container container">
 
-<div class="file-upload-container container">
-    <div class="row">
-        <div class="col text-center">
-            <h3>Upload Files for Indexing</h3>
-            <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".pdf" FilesChanged="UploadFiles">
-                <ButtonTemplate>
-                    <MudButton HtmlTag="label"
-                               Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               StartIcon="@Icons.Material.Filled.CloudUpload"
-                               for="@context">
-                        Upload Documents
-                    </MudButton>
-                </ButtonTemplate>
-            </MudFileUpload>
-        </div>
-    </div>
-
-    <div class="extraction-results-row row">
-        @if (extractionResults != null)
-        {
-            <MudList>
-                @foreach (var extractionResult in extractionResults)
-                {
-                    <MudExpansionPanel Icon="@Icons.Material.Filled.AttachFile" Text="@extractionResult.FileName">
-                        <ChildContent>
-                            <MudList>
-                                @foreach (var extractedParagraph in extractionResult.ExtractedParagraphs)
-                                {
-                                    <MudListItem>
-                                        <MudCard>
-                                            <MudCardContent class="extraction-results">
-                                                <MudText Typo="Typo.h6">@extractedParagraph.Title</MudText>
-                                                <MudText><code>@extractedParagraph.Content</code></MudText>
-                                            </MudCardContent>
-                                        </MudCard>
-                                    </MudListItem>
-                                }
-                            </MudList>
-                        </ChildContent>
-                    </MudExpansionPanel>
-                }
-            </MudList>
-        }
-    </div>    
-</div>
-
-<div class="filters-container container">
-    <div class="row">
-        <div class="col text-center">
-            <h3>Filters</h3>
-        </div>
-    </div>
-    <div class="filters-row row justify-content-center">
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="company">Company:</label>
-                <select id="company" class="form-control" @bind="SelectedCompany">
-                    <option value="">Select a company</option>
-                    @foreach (var company in Companies)
-                    {
-                        <option value="@company">@company</option>
-                    }
-                </select>
+    <div class="file-upload-container row container">
+        <div class="row">
+            <div class="col text-center">
+                <h3>Upload Files for Indexing</h3>
+                <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".pdf" FilesChanged="UploadFiles">
+                    <ButtonTemplate>
+                        <MudButton HtmlTag="label"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.CloudUpload"
+                                   for="@context">
+                            Upload Documents
+                        </MudButton>
+                    </ButtonTemplate>
+                </MudFileUpload>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="year">Year:</label>
-                <select id="year" class="form-control" @bind="SelectedYear">
-                    <option value="">Select a year</option>
-                    @foreach (var year in Years)
+
+        <div class="extraction-results-row row">
+            @if (extractionResults != null)
+            {
+                <MudList>
+                    @foreach (var extractionResult in extractionResults)
                     {
-                        <option value="@year">@year</option>
+                        <MudExpansionPanel Icon="@Icons.Material.Filled.AttachFile" Text="@extractionResult.FileName">
+                            <ChildContent>
+                                <MudList>
+                                    @foreach (var extractedParagraph in extractionResult.ExtractedParagraphs)
+                                    {
+                                        <MudListItem>
+                                            <MudCard>
+                                                <MudCardContent class="extraction-results">
+                                                    <MudText Typo="Typo.h6">@extractedParagraph.Title</MudText>
+                                                    <MudText><code>@extractedParagraph.Content</code></MudText>
+                                                </MudCardContent>
+                                            </MudCard>
+                                        </MudListItem>
+                                    }
+                                </MudList>
+                            </ChildContent>
+                        </MudExpansionPanel>
                     }
-                </select>
+                </MudList>
+            }
+        </div>
+    </div>
+
+    <div class="filters-container row container">
+        <div class="row">
+            <div class="col text-center">
+                <h3>Filters</h3>
             </div>
         </div>
-    </div>
-</div>
-
-<div class="cognitive-chat-container container">
-    <div class="row">
-        <div class="col text-center">
-            <h3>Chat</h3>
-        </div>
-    </div>
-    <div class="chat-row row">
-        <div class="chat-column">
-            <div id="messages" class="chat-window" @ref="messagesDiv">
-                <div class="chat-message" style="margin-bottom: 10px;">
-
-                    @foreach (var message in chatMessages)
-                    {
-                        <ChatBubble Message="message" />
-                    }
-
+        <div class="filters-row row justify-content-center">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="company">Company:</label>
+                    <select id="company" class="form-control" @bind="SelectedCompany">
+                        <option value="">Select a company</option>
+                        @foreach (var company in Companies)
+                        {
+                            <option value="@company">@company</option>
+                        }
+                    </select>
                 </div>
             </div>
-
-            <EditForm Model="chatInput" OnValidSubmit="SendCogServiceQuery">
-                <div class="input-group" style="margin-top: 10px;">
-                    <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="year">Year:</label>
+                    <select id="year" class="form-control" @bind="SelectedYear">
+                        <option value="">Select a year</option>
+                        @foreach (var year in Years)
+                        {
+                            <option value="@year">@year</option>
+                        }
+                    </select>
                 </div>
-            </EditForm>
-
-        </div>
-        <div class="sources-column">
-            <h3>Sources</h3>
-            <Sources SourcesItems="cognitiveSearchResults" isLoading="isLoading" />
+            </div>
         </div>
     </div>
 
-    
+    <div class="cognitive-chat-container row container">
+        <div class="row">
+            <div class="col text-center">
+                <h3>Chat</h3>
+            </div>
+        </div>
+        <div class="chat-row row">
+            <div class="chat-column">
+                <div id="messages" class="chat-window" @ref="messagesDiv">
+                    <div class="chat-message" style="margin-bottom: 10px;">
+
+                        @foreach (var message in chatMessages)
+                        {
+                            <ChatBubble Message="message" />
+                        }
+
+                    </div>
+                </div>
+
+                <EditForm Model="chatInput" OnValidSubmit="SendCogServiceQuery">
+                    <div class="input-group" style="margin-top: 10px;">
+                        <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
+                    </div>
+                </EditForm>
+
+            </div>
+            <div class="sources-column">
+                <h3>Sources</h3>
+                <Sources SourcesItems="cognitiveSearchResults" isLoading="isLoading" />
+            </div>
+        </div>
+
+
+    </div>
+
 </div>
+
 
 @code {
 

@@ -105,18 +105,30 @@ a, .btn-link {
     height: 95%;
 }
 
+.main-container {
+    height: 100vh;
+    padding-left: 0px;
+    padding-right: 0px;
+}
 
 .chat-container {
     height: 90%;
 }
 
-.chat-row {
-    height: 100%;
+.cognitive-chat-container {
+    height: 71%;
 }
 
-.cognitive-chat-container {
-    height: 65%;
-    margin-top: 10px;
+.chat-row {
+    height: 94%;
+}
+
+.file-upload-container, .filters-container, .cognitive-chat-container {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: #efefef;
 }
 
 .chat-column {
