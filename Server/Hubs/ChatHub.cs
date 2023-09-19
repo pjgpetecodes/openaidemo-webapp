@@ -13,11 +13,17 @@ namespace openaidemo_webapp.Server.Hubs
     {
         private readonly IConfiguration _config;
 
+        //
+        // Initialise the Configuration
+        //
         public ChatHub(IConfiguration config)
         {
             _config = config;
         }
 
+        //
+        // Send a Query to Azure OpenAI using the Helper
+        //
         public async Task SendQuery(string query, List<OpenAIChatMessage> previousMessages)
         {
             var openAIHelper = new OpenAIHelper(_config);
@@ -25,6 +31,9 @@ namespace openaidemo_webapp.Server.Hubs
             var response = await openAIHelper.QueryOpenAIWithPrompts(query, previousMessages, Clients.Caller);
         }
 
+        //
+        // Send a Query to both Azure Cognitive Services and OpenAI using the Helpers
+        //
         public async Task SendCogServiceQuery(string query, List<OpenAIChatMessage> previousMessages, string company, string year)
         {
             var cognitiveSearchHelper = new CognitiveSearchHelper(_config);
@@ -39,8 +48,21 @@ namespace openaidemo_webapp.Server.Hubs
             var openAIHelper = new OpenAIHelper(_config);
 
             var response = await openAIHelper.QueryOpenAIWithPromptAndSources(query, cogSearchResults, previousMessages,  Clients.Caller);
+        }
 
+        //
+        // Get a list of the Cognitive Service Index Facets
+        //
+        public async Task GetCogServiceFacets(string query = "")
+        {
+            var cognitiveSearchHelper = new CognitiveSearchHelper(_config);
+
+            CognitiveSearchFacets cognitiveSearchFacetResults = await cognitiveSearchHelper.GetAllFacets();
+
+            await Clients.Caller.SendAsync("CognitiveSearchFacetResults", cognitiveSearchFacetResults);
 
         }
+
+
     }
 }

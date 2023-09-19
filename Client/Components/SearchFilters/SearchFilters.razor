@@ -1,0 +1,85 @@
+﻿@inherits ComponentBase
+@using Microsoft.AspNetCore.Components
+@using openaidemo_webapp.Shared;
+@using MudBlazor;
+
+@if (isLoading)
+{
+    <div class="FiltersLoaderContainer">
+        <p><MudProgressCircular Color="Color.Success" Indeterminate="true" /><p>Loading</p></p>
+    </div>
+}
+else
+{
+    <div class="filters-row row justify-content-center">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="company">Company:</label>
+                <select id="company" class="form-control" @bind="SelectedCompany">
+                    <option value="" selected>Select a company</option>
+                    @foreach (var company in CompanyItems)
+                    {
+                        <option value="@company">@company</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="year">Year:</label>
+                <select id="year" class="form-control" @bind="SelectedYear">
+                    <option value="" selected>Select a year</option>
+                    @foreach (var year in YearItems)
+                    {
+                        <option value="@year">@year</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public List<String> CompanyItems { get; set; }
+    [Parameter] public List<String> YearItems { get; set; }
+
+    private string _selectedCompany;
+    private string _selectedYear;
+
+    [Parameter] public bool isLoading { get; set; }
+
+    [Parameter] public EventCallback<string> SelectedCompanyChanged { get; set; }
+    [Parameter] public EventCallback<string> SelectedYearChanged { get; set; }
+
+    private string SelectedCompany
+    {
+        get => _selectedCompany;
+        set
+        {
+            if (_selectedCompany != value)
+            {
+                _selectedCompany = value;
+                SelectedCompanyChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    private string SelectedYear
+    {
+        get => _selectedYear;
+        set
+        {
+            if (_selectedYear != value)
+            {
+                _selectedYear = value;
+                SelectedYearChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+    }
+
+}

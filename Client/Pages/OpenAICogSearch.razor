@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using openaidemo_webapp.Client.Components.ChatBubble
 @using openaidemo_webapp.Client.Components.Sources
+@using openaidemo_webapp.Client.Components.SearchFilters
 @using openaidemo_webapp.Shared
 @using System.Net.Http
 @using System.Net.Http.Json
@@ -16,86 +17,63 @@
 <PageTitle>Azure OpenAI Cognitive Search</PageTitle>
 
 <div class="main-container container">
-
-    <div class="file-upload-container row container">
-        <div class="row">
-            <div class="col text-center">
-                <h3>Upload Files for Indexing</h3>
-                <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".pdf" FilesChanged="UploadFiles">
-                    <ButtonTemplate>
-                        <MudButton HtmlTag="label"
-                                   Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   StartIcon="@Icons.Material.Filled.CloudUpload"
-                                   for="@context">
-                            Upload Documents
-                        </MudButton>
-                    </ButtonTemplate>
-                </MudFileUpload>
-            </div>
-        </div>
-
-        <div class="extraction-results-row row">
-            @if (extractionResults != null)
-            {
-                <MudList>
-                    @foreach (var extractionResult in extractionResults)
+    
+    <div class="options-container row container">
+        <MudExpansionPanels Elevation="2" Rounded="true" MultiExpansion="false" class="">
+            <MudExpansionPanel Text="Upload Files">
+                <div class="file-upload-row row">
+                    <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".pdf" FilesChanged="UploadFiles">
+                        <ButtonTemplate>
+                            <MudButton HtmlTag="label"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudUpload"
+                                       for="@context">
+                                Upload Documents
+                            </MudButton>
+                        </ButtonTemplate>
+                    </MudFileUpload>
+                </div>
+                <div class="extraction-results-row row">
+                    @if (extractionResults != null)
                     {
-                        <MudExpansionPanel Icon="@Icons.Material.Filled.AttachFile" Text="@extractionResult.FileName">
-                            <ChildContent>
-                                <MudList>
-                                    @foreach (var extractedParagraph in extractionResult.ExtractedParagraphs)
-                                    {
-                                        <MudListItem>
-                                            <MudCard>
-                                                <MudCardContent class="extraction-results">
-                                                    <MudText Typo="Typo.h6">@extractedParagraph.Title</MudText>
-                                                    <MudText><code>@extractedParagraph.Content</code></MudText>
-                                                </MudCardContent>
-                                            </MudCard>
-                                        </MudListItem>
-                                    }
-                                </MudList>
-                            </ChildContent>
-                        </MudExpansionPanel>
+                        <MudList>
+                            @foreach (var extractionResult in extractionResults)
+                            {
+                                <MudExpansionPanel Icon="@Icons.Material.Filled.AttachFile" Text="@extractionResult.FileName">
+                                    <ChildContent>
+                                        <MudList>
+                                            @foreach (var extractedParagraph in extractionResult.ExtractedParagraphs)
+                                            {
+                                                <MudListItem>
+                                                    <MudCard>
+                                                        <MudCardContent class="extraction-results">
+                                                            <MudText Typo="Typo.h6">@extractedParagraph.Title</MudText>
+                                                            <MudText><code>@extractedParagraph.Content</code></MudText>
+                                                        </MudCardContent>
+                                                    </MudCard>
+                                                </MudListItem>
+                                            }
+                                        </MudList>
+                                    </ChildContent>
+                                </MudExpansionPanel>
+                            }
+                        </MudList>
                     }
-                </MudList>
-            }
-        </div>
-    </div>
-
-    <div class="filters-container row container">
-        <div class="row">
-            <div class="col text-center">
-                <h3>Filters</h3>
-            </div>
-        </div>
-        <div class="filters-row row justify-content-center">
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="company">Company:</label>
-                    <select id="company" class="form-control" @bind="SelectedCompany">
-                        <option value="">Select a company</option>
-                        @foreach (var company in Companies)
-                        {
-                            <option value="@company">@company</option>
-                        }
-                    </select>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="year">Year:</label>
-                    <select id="year" class="form-control" @bind="SelectedYear">
-                        <option value="">Select a year</option>
-                        @foreach (var year in Years)
-                        {
-                            <option value="@year">@year</option>
-                        }
-                    </select>
-                </div>
-            </div>
-        </div>
+            </MudExpansionPanel>
+            <MudExpansionPanel Text="Filters">
+                <SearchFilters CompanyItems="Companies"
+                               YearItems="Years"
+                               SelectedCompanyChanged="OnSelectedCompanyChanged"
+                               SelectedYearChanged="OnSelectedYearChanged"
+                               isLoading="isLoadingFilters">
+                </SearchFilters>
+            </MudExpansionPanel>
+            <MudExpansionPanel Text="Options">
+                <MudCheckBox @bind-Checked="includePreviousMessages" Class="include-previous-messages">Include Previous Messages</MudCheckBox>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
     </div>
 
     <div class="cognitive-chat-container row container">
@@ -107,7 +85,7 @@
                 <h3>Chat</h3>
             </div>
             <div class="col-sm justify-content-end">
-                <MudCheckBox @bind-Checked="includePreviousMessages" Class="include-previous-messages">Include Previous Messages</MudCheckBox>
+                
             </div>
         </div>
         <div class="chat-row row">
@@ -134,7 +112,7 @@
             </div>
             <div class="sources-column col-sm">
                 <h3>Sources</h3>
-                <Sources SourcesItems="cognitiveSearchResults" isLoading="isLoading" />
+                <Sources SourcesItems="cognitiveSearchResults" isLoading="isLoadingSources" />
             </div>
         </div>
 
@@ -153,13 +131,15 @@
     IList<IBrowserFile> uploadedFiles = new List<IBrowserFile>();
     private List<ExtractionResult> extractionResults = new List<ExtractionResult>();
     List<CognitiveSearchResult> cognitiveSearchResults = new List<CognitiveSearchResult>();
-    private bool isLoading = false;
+    List<CognitiveSearchFacet> cognitiveSearchFacetResults = new List<CognitiveSearchFacet>();
+    private bool isLoadingSources = false;
+    private bool isLoadingFilters = false;
 
     // Filters
     private string SelectedCompany { get; set; } = "";
     private string SelectedYear { get; set; } = "";
-    private List<string> Companies { get; set; } = new List<string> { "Microsoft", "Amazon", "Google" };
-    private List<int> Years { get; set; } = Enumerable.Range(2001, 25).ToList();
+    private List<String> Companies { get; set; } = new List<string>();
+    private List<String> Years { get; set; } = new List<String>();
     private bool includePreviousMessages = true;
 
     //
@@ -206,12 +186,66 @@
         //
         hubConnection.On<CognitiveSearchResults>("CognitiveSearchResults", (cogSearchResults) =>
         {
-            isLoading = false;
+            isLoadingSources = false;
             cognitiveSearchResults = (List<CognitiveSearchResult>)cogSearchResults.CognitiveSearchResultList;
             StateHasChanged();
         });
 
+        //
+        // Receive all of the Cognitive Search Facets
+        //
+        hubConnection.On<CognitiveSearchFacets>("CognitiveSearchFacetResults", (cogSearchFacetResults) =>
+        {
+            cognitiveSearchFacetResults = (List<CognitiveSearchFacet>)cogSearchFacetResults.CognitiveSearchFacetList;
+
+            //
+            // Fill the companies dropdown
+            //
+            CognitiveSearchFacet companyFacet = cognitiveSearchFacetResults.Find(f => f.facetName == "company");
+
+            if (companyFacet != null)
+            {
+                // Iterate through the cognitiveSearchFacetResults and add the facetResultName to Companies list
+                foreach (CognitiveSearchFacetResult result in companyFacet.cognitiveSearchFacetResults)
+                {
+                    Companies.Add(result.facetResultName);
+                }
+            }
+
+            Companies.Sort();
+            SelectedCompany = "";
+
+            //
+            // Fill the Years dropdown
+            //
+            CognitiveSearchFacet yearFacet = cognitiveSearchFacetResults.Find(f => f.facetName == "year");
+
+            if (yearFacet != null)
+            {
+                // Iterate through the cognitiveSearchFacetResults and add the facetResultName to Years list
+                foreach (CognitiveSearchFacetResult result in yearFacet.cognitiveSearchFacetResults)
+                {
+                    Years.Add(result.facetResultName);
+                }
+            }
+
+            Years.Sort();
+            SelectedYear = "";
+
+            isLoadingFilters = false;
+            StateHasChanged();
+        });
+
+        //
+        // Connect to the SignalR Hub
+        //
         await hubConnection.StartAsync();
+
+        //
+        // Fill all of the Filter Facets
+        //
+        GetFilters();
+
     }
 
     //
@@ -229,6 +263,31 @@
     }
 
     //
+    // The Selected Company Filter has Changed
+    //
+    private void OnSelectedCompanyChanged(string company)
+    {
+        SelectedCompany = company;
+    }
+
+    //
+    // The Selected Year Filter has Changed
+    //
+    private void OnSelectedYearChanged(string year)
+    {
+        SelectedYear = year;
+    }
+
+    //
+    // Get the Search Filters
+    //
+    private async Task GetFilters()
+    {
+        isLoadingFilters = true;
+        await hubConnection.SendAsync("GetCogServiceFacets", "");
+    }
+
+    //
     // Send a Cognitive Search Query
     //
     private async Task SendCogServiceQuery()
@@ -236,7 +295,7 @@
         if (!string.IsNullOrWhiteSpace(chatInput.Query))
         {
             cognitiveSearchResults = new List<CognitiveSearchResult>();
-            isLoading = true;
+            isLoadingSources = true;
             String chatMessageGuid = System.Guid.NewGuid().ToString();
 
             List<OpenAIChatMessage> previousMessages = new List<OpenAIChatMessage>();

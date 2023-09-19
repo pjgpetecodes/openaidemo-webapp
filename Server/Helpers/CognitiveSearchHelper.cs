@@ -135,23 +135,61 @@ namespace openaidemo_webapp.Server.Helpers
                 // Define the fields used in the search index.  
                 Fields =
                 {
-                    new SimpleField("id", SearchFieldDataType.String) { IsKey = true, IsFilterable = true, IsSortable = true, IsFacetable = true },
-                    new SearchableField("title") { IsFilterable = true, IsSortable = true },
-                    new SearchableField("content") { IsFilterable = true },
-                    new SearchableField("location") { IsFilterable = true, IsSortable = true, IsFacetable = true },
-                    new SearchableField("company") { IsFilterable = true, IsSortable = true, IsFacetable = true },
-                    new SearchableField("year") { IsFilterable = true, IsSortable = true, IsFacetable = true },
-                    new SearchableField("fileName") { IsFilterable = true, IsSortable = true, IsFacetable = true },  
+                    new SimpleField("id", SearchFieldDataType.String) 
+                    { 
+                        IsKey = true, 
+                        IsFilterable = true, 
+                        IsSortable = true, 
+                        IsFacetable = false 
+                    },
+                    new SearchableField("title") 
+                    { 
+                        IsFilterable = true, 
+                        IsSortable = true 
+                    },
+                    new SearchableField("content") 
+                    {
+                        IsFilterable = true,
+                        IsSortable = false,
+                        IsFacetable = false
+                          
+                    },
+                    new SearchableField("location") 
+                    { 
+                        IsFilterable = true, 
+                        IsSortable = true, 
+                        IsFacetable = false 
+                    },
+                    new SearchableField("company") 
+                    { 
+                        IsFilterable = true, 
+                        IsSortable = true, 
+                        IsFacetable = true 
+                    },
+                    new SearchableField("year") 
+                    { 
+                        IsFilterable = true, 
+                        IsSortable = true, 
+                        IsFacetable = true 
+                    },
+                    new SearchableField("fileName") 
+                    { 
+                        IsFilterable = true, 
+                        IsSortable = true, 
+                        IsFacetable = false 
+                    },  
                     // Configure the vector search fields for title and content.  
                     new SearchField("titleVector", SearchFieldDataType.Collection(SearchFieldDataType.Single))
                     {
                         IsSearchable = true,
+                        IsFacetable = false,
                         VectorSearchDimensions = ModelDimensions,
                         VectorSearchConfiguration = vectorSearchConfigName
                     },
                     new SearchField("contentVector", SearchFieldDataType.Collection(SearchFieldDataType.Single))
                     {
                         IsSearchable = true,
+                        IsFacetable = false,
                         VectorSearchDimensions = ModelDimensions,
                         VectorSearchConfiguration = vectorSearchConfigName
                     }
@@ -302,5 +340,80 @@ namespace openaidemo_webapp.Server.Helpers
             
         }
 
+        //
+        // Get all of the available Facets
+        //
+        public async Task<CognitiveSearchFacets> GetAllFacets(string query="")
+        {
+
+            try
+            {
+                var cognitiveSearchKey = _config["CognitiveSearch:Key"] ?? string.Empty;
+                var cognitiveSearchEndpoint = $"https://{_config["CognitiveSearch:InstanceName"]}.search.windows.net";
+                var indexName = _config["CognitiveSearch:IndexName"] ?? string.Empty;
+
+                // Initialize Azure Cognitive Search clients  
+                var searchCredential = new AzureKeyCredential(cognitiveSearchKey);
+                var indexClient = new SearchIndexClient(new Uri(cognitiveSearchEndpoint), searchCredential);
+                var searchClient = indexClient.GetSearchClient(indexName);
+
+                SearchOptions options;
+                Response<SearchResults<CognitiveSearchResult>> response;
+                IDictionary<string, IList<FacetResult>> facetResults;
+                List<KeyValuePair<string, string>> facets = new List<KeyValuePair<string, string>>();
+
+                options = new SearchOptions()
+                {
+                    IncludeTotalCount = true,
+                    Filter = string.Empty,
+                    OrderBy = { string.Empty },
+                    QueryType = SearchQueryType.Simple
+                };
+
+                options.Facets.Add("company");
+                options.Facets.Add("year");
+                
+                response = searchClient.Search<CognitiveSearchResult>("*", options);
+                facetResults = response.Value.Facets;
+
+                var cognitiveSearchFacets = new CognitiveSearchFacets();
+                cognitiveSearchFacets.CognitiveSearchFacetList = new List<CognitiveSearchFacet>();
+
+                // Foreach through each facetresult  
+                foreach (KeyValuePair<string, IList<FacetResult>> facetEntry in facetResults)
+                {
+                    string entryKey = facetEntry.Key;
+                    IList<FacetResult> entryFacetResults = facetEntry.Value;
+
+                    CognitiveSearchFacet cognitiveSearchFacet = new CognitiveSearchFacet()
+                    {
+                        facetName = entryKey,
+                        cognitiveSearchFacetResults = new List<CognitiveSearchFacetResult>()
+                    };
+
+                    foreach (FacetResult facetResult in entryFacetResults)
+                    {
+                        CognitiveSearchFacetResult cognitiveSearchFacetResult = new CognitiveSearchFacetResult()
+                        {
+                            facetResultName = facetResult.Value.ToString(),
+                            facetResultCount = facetResult.Count
+                        };
+                        cognitiveSearchFacet.cognitiveSearchFacetResults.Add(cognitiveSearchFacetResult);
+                    }
+
+                    cognitiveSearchFacets.CognitiveSearchFacetList.Add(cognitiveSearchFacet);
+                }
+
+                return cognitiveSearchFacets;
+
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.Print(ex.ToString());
+                return new CognitiveSearchFacets();
+            }
+
+
+        }
     }
 }

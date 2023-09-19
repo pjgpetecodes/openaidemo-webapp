@@ -116,7 +116,7 @@ a, .btn-link {
 }
 
 .cognitive-chat-container {
-    height: calc(100vh - 23.5rem);
+    height: calc(100vh - 19rem);
 }
 
 .chat-row {
@@ -129,12 +129,20 @@ a, .btn-link {
     margin-right: 0px;
 }
 
-.file-upload-container, .filters-container, .cognitive-chat-container {
+.options-container, .cognitive-chat-container {
     border: 1px solid #ccc;
     border-radius: 10px;
     margin-bottom: 20px;
     padding: 10px;
     background: #efefef;
+}
+
+.mud-expand-panel-text {
+    font-weight: bold;
+}
+
+.file-upload-row {
+    text-align: center;
 }
 
 .chat-column {
