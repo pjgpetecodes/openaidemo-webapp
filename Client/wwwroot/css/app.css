@@ -123,6 +123,10 @@ a, .btn-link {
     height: 94%;
 }
 
+.cognitive-chat-messages-input-item {
+    height: 100%;
+}
+
 .chat-input-row.row {
     width: 100%;
     margin-left: 0px;
