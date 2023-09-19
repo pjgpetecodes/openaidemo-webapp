@@ -106,7 +106,7 @@
                             </div>
                         </MudItem>
 
-                        <MudItem xs="12">
+                        <MudItem xs="12" Class="cognitive-chat-input-container">
                             <EditForm Model="chatInput" OnValidSubmit="SendCogServiceQuery" class="chat-input-form">
                                 <div class="input-group" style="margin-top: 10px;">
                                     <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />

@@ -109,6 +109,7 @@ a, .btn-link {
     height: 100vh;
     padding-left: 0px;
     padding-right: 0px;
+    max-width: 100%;
 }
 
 .chat-container {
@@ -139,7 +140,15 @@ a, .btn-link {
     margin-bottom: 20px;
     padding: 10px;
     background: #efefef;
-    width: calc(100% + 24px);
+    max-width: 100%;
+}
+
+.cognitive-chat-input-container {
+    height: 80px;
+}
+
+.options-container, .mud-grid.mud-grid-spacing-xs-3.justify-start.cognitive-chat-container {
+    width: 100%;
 }
 
 .mud-expand-panel-text {
@@ -181,7 +190,7 @@ a, .btn-link {
 }
 
 .cognitive-chat-messages-container {
-    height: 94%;
+    height: calc(100% - 50px);
 }
 
 .cognitive-chat-messages-input-container {
