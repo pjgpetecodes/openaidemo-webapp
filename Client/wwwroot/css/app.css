@@ -135,6 +135,7 @@ a, .btn-link {
     margin-bottom: 20px;
     padding: 10px;
     background: #efefef;
+    width: calc(100% + 24px);
 }
 
 .mud-expand-panel-text {
@@ -153,7 +154,7 @@ a, .btn-link {
 }
 
 .sources-column {
-    width: 30%;
+    width: 100%;
     background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
     height: 100%;
     float: right;
@@ -162,9 +163,34 @@ a, .btn-link {
     padding: 10px;
 }
 
+.chat-header {
+    height: 7%;
+    min-height: 50px;
+}
+
+.cognitive-chat-controls-container {
+    height: 100%;
+}
+
+.cognitive-chat-message-controls-container {
+    height: 96%;
+}
+
+.cognitive-chat-messages-container {
+    height: 94%;
+}
+
+.cognitive-chat-messages-input-container {
+    height: 100%
+}
+
+.cognitive-chat-sources-container {
+    height: 100%;
+}
+
 .chat-window {
     width: 100%;
-    height: 96%;
+    height: 100%;
     border: 1px solid #ccc;
     overflow-y: scroll;
     margin-left: 0px;

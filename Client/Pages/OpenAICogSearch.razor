@@ -76,48 +76,61 @@
         </MudExpansionPanels>
     </div>
 
-    <div class="cognitive-chat-container row container">
-        <div class="cognitive-chat-header-row row">
-            <div class="col-sm">
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="HandleClearChat">Clear Chat</MudButton>
-            </div>
-            <div class="col-sm text-center">
-                <h3>Chat</h3>
-            </div>
-            <div class="col-sm justify-content-end">
-                
-            </div>
-        </div>
-        <div class="chat-row row">
-            <div class="chat-column col-5">
-                <div id="messages" class="chat-window row" @ref="messagesDiv">
-                    <div class="chat-message" style="margin-bottom: 10px;">
+    <MudGrid Class="cognitive-chat-container">
+        <MudItem xs="4" Class="chat-header">
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="HandleClearChat">Clear Chat</MudButton>
+        </MudItem>
+        <MudItem xs="4" Class="chat-header">
+            <h3>Chat</h3>
+        </MudItem>
+        <MudItem xs="4" Class="chat-header">
+        </MudItem>
 
-                        @foreach (var message in chatMessages)
-                        {
-                            <ChatBubble Message="message" />
-                        }
+        <MudItem xs="12" Class="cognitive-chat-controls-container">
 
+            <MudGrid Class="cognitive-chat-message-controls-container">
+                <MudItem xs="8">
+
+                    <MudGrid Class="cognitive-chat-messages-input-container">
+
+                        <MudItem xs="12" Class="cognitive-chat-messages-container">
+                            <div id="messages" class="chat-window row" @ref="messagesDiv">
+                                <div class="chat-message" style="margin-bottom: 10px;">
+
+                                    @foreach (var message in chatMessages)
+                                    {
+                                        <ChatBubble Message="message" />
+                                    }
+
+                                </div>
+                            </div>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <EditForm Model="chatInput" OnValidSubmit="SendCogServiceQuery" class="chat-input-form">
+                                <div class="input-group" style="margin-top: 10px;">
+                                    <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
+                                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
+                                </div>
+                            </EditForm>
+                        </MudItem>
+
+                    </MudGrid>
+
+                </MudItem>
+
+                <MudItem xs="4" Class="cognitive-chat-sources-container">
+                    <div class="sources-column">
+                        <h3>Sources</h3>
+                        <Sources SourcesItems="cognitiveSearchResults" isLoading="isLoadingSources" />
                     </div>
-                </div>
+                </MudItem>
 
-                <div class="chat-input-row row">
-                    <EditForm Model="chatInput" OnValidSubmit="SendCogServiceQuery" class="chat-input-form">
-                        <div class="input-group" style="margin-top: 10px;">
-                            <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
-                        </div>
-                    </EditForm>
-                </div>
-            </div>
-            <div class="sources-column col-sm">
-                <h3>Sources</h3>
-                <Sources SourcesItems="cognitiveSearchResults" isLoading="isLoadingSources" />
-            </div>
-        </div>
+            </MudGrid>
 
+        </MudItem>        
 
-    </div>
+    </MudGrid>
 
 </div>
 
