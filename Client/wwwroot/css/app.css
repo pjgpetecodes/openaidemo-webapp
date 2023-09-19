@@ -141,6 +141,7 @@ a, .btn-link {
     padding: 10px;
     background: #efefef;
     max-width: 100%;
+    width: 100%;
 }
 
 .cognitive-chat-input-container {
