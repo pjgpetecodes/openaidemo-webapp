@@ -113,7 +113,7 @@ a, .btn-link {
 }
 
 .chat-container {
-    height: 90%;
+    height: calc(100vh - 5rem);
 }
 
 .cognitive-chat-container {
@@ -134,7 +134,7 @@ a, .btn-link {
     margin-right: 0px;
 }
 
-.options-container, .cognitive-chat-container {
+.options-container, .chat-container, .cognitive-chat-container {
     border: 1px solid #ccc;
     border-radius: 10px;
     margin-bottom: 20px;
@@ -148,7 +148,11 @@ a, .btn-link {
     height: 80px;
 }
 
-.options-container, .mud-grid.mud-grid-spacing-xs-3.justify-start.cognitive-chat-container {
+.chat-input-container {
+    height: 80px;
+}
+
+.options-container, .mud-grid.mud-grid-spacing-xs-3.justify-start.chat-container,  .mud-grid.mud-grid-spacing-xs-3.justify-start.cognitive-chat-container {
     width: 100%;
 }
 
@@ -192,6 +196,10 @@ a, .btn-link {
 
 .cognitive-chat-messages-container {
     height: calc(100% - 50px);
+}
+
+.chat-messages-container {
+    height: calc(100% - 140px);
 }
 
 .cognitive-chat-messages-input-container {

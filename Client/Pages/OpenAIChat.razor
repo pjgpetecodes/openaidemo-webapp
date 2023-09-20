@@ -5,28 +5,43 @@
 @using openaidemo_webapp.Shared
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
+@using MudBlazor
 
 <PageTitle>Azure OpenAI Chat</PageTitle>
 
-<div class="chat-container">
-    <div id="messages" class="chat-window" @ref="messagesDiv">
-        <div class="chat-message" style="margin-bottom: 10px;">
+<MudGrid Class="chat-container">
+    <MudItem xs="4" Class="chat-header">
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="HandleClearChat">Clear Chat</MudButton>
+    </MudItem>
+    <MudItem xs="4" Class="chat-header text-center">
+        <h3>Chat</h3>
+    </MudItem>
+    <MudItem xs="4" Class="chat-header">
+    </MudItem>
 
-            @foreach (var message in chatMessages)
-            {
-                <ChatBubble Message="message" />
-            }
+    <MudItem xs="12" Class="chat-messages-container">
+        <div id="messages" class="chat-window row" @ref="messagesDiv">
+            <div class="chat-message" style="margin-bottom: 10px;">
 
+                @foreach (var message in chatMessages)
+                {
+                    <ChatBubble Message="message" />
+                }
+
+            </div>
         </div>
-    </div>
+    </MudItem>
 
-    <EditForm Model="chatInput" OnValidSubmit="SendQuery">
-        <div class="input-group" style="margin-top: 10px;">
-            <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
-            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
-        </div>
-    </EditForm>
-</div>
+    <MudItem xs="12" Class="chat-input-container">
+        <EditForm Model="chatInput" OnValidSubmit="SendQuery" class="chat-input-form">
+            <div class="input-group" style="margin-top: 10px;">
+                <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
+                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
+            </div>
+        </EditForm>
+    </MudItem>
+        
+</MudGrid>
 
 @code {
 
@@ -115,6 +130,12 @@
         public string Query { get; set; }
     }
 
-
+    //
+    // Clear the Chat Window
+    //
+    private async Task HandleClearChat()
+    {
+        chatMessages.Clear();
+    }
 
 }
