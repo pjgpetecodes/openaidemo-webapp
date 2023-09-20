@@ -19,6 +19,12 @@ Create a secrets.json file with the following content (In visual studio, right c
   }
 }
 
+## File Upload Requirements
+
+- Only PDFs are Supported
+- Name your files as follows (4 digit year);
+
+`<Company>-<Year>-<FileName>.pdf`
 
 ## Example Queries
 
