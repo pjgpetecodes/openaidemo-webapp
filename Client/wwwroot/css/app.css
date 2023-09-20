@@ -173,10 +173,11 @@ a, .btn-link {
 
 .sources-column {
     width: 100%;
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background-color: white;
+    border: 1px solid #ccc;
     height: 100%;
     float: right;
-    color: white;
+    color: black;
     text-align: center;
     padding: 10px;
 }
@@ -217,6 +218,7 @@ a, .btn-link {
     overflow-y: scroll;
     margin-left: 0px;
     margin-right: 0px;
+    background-color: white;
 }
 
 .chat-input-form {
@@ -231,4 +233,8 @@ a, .btn-link {
 
 .include-previous-messages {
     justify-content: right;
+}
+
+.resources-header {
+    background-color: #1b6ec2;
 }

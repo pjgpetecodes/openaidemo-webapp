@@ -83,9 +83,10 @@
         <MudItem xs="4" Class="chat-header text-center">
             <h3>Chat</h3>
         </MudItem>
-        <MudItem xs="4" Class="chat-header">
+        <MudItem xs="4" Class="chat-header text-center">
+            <h3>Sources</h3>
         </MudItem>
-
+        
         <MudItem xs="12" Class="cognitive-chat-controls-container">
 
             <MudGrid Class="cognitive-chat-message-controls-container">
@@ -121,7 +122,6 @@
 
                 <MudItem xs="4" Class="cognitive-chat-sources-container">
                     <div class="sources-column">
-                        <h3>Sources</h3>
                         <Sources SourcesItems="cognitiveSearchResults" isLoading="isLoadingSources" />
                     </div>
                 </MudItem>

@@ -4,11 +4,12 @@
 }
 
 .SourceCard {
-    background-color: #f8f9fa;
+    background-color: #f2f2f7;
     padding: 1em;
     margin-bottom: 1em;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
     .SourceCard h3 {
