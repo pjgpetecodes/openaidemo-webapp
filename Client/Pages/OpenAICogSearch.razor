@@ -34,6 +34,15 @@
                         </ButtonTemplate>
                     </MudFileUpload>
                 </div>
+
+                @if (UploadStatus != "")
+                {
+                    <div class="upload-status">
+                        @UploadStatus
+                    </div>
+
+                }
+                
                 <div class="extraction-results-row row">
                     @if (extractionResults != null)
                     {
@@ -155,6 +164,8 @@
     private List<String> Years { get; set; } = new List<String>();
     private bool includePreviousMessages = true;
 
+    private string UploadStatus = "";
+
     //
     // Initialise the SignalR connection when the page loads
     //
@@ -246,6 +257,16 @@
             SelectedYear = "";
 
             isLoadingFilters = false;
+            StateHasChanged();
+        });
+
+        //
+        // Receive all of the Cognitive Search Facets
+        //
+        hubConnection.On<String>("UpdateFileUploadStatus", (uploadStatus) =>
+        {
+            UploadStatus = uploadStatus;
+            Console.WriteLine(uploadStatus);
             StateHasChanged();
         });
 
@@ -365,7 +386,7 @@
                 await originalStream.CopyToAsync(memoryStream);
                 // Call the Blazor Server backend to upload the file
                 ExtractionResult extractionResult = await UploadFileToServer(memoryStream, file.Name, file.ContentType);
-                extractionResults.Add(extractionResult);
+                //extractionResults.Add(extractionResult);
 
                 uploadedFiles.Add(file);
                 StateHasChanged();
@@ -380,12 +401,14 @@
     //
     private async Task<ExtractionResult> UploadFileToServer(Stream stream, string fileName, string contentType)
     {
-
         try
         {
             var content = new MultipartFormDataContent();
             stream.Position = 0; // Reset the stream position to the beginning
             content.Add(new StreamContent(stream), "file", fileName);
+
+            string? connectionId = hubConnection?.ConnectionId;
+            content.Add(new StringContent(connectionId ?? string.Empty), "connectionId");
 
             var response = await Http.PostAsync("api/FileUpload", content);
             if (response.IsSuccessStatusCode)
@@ -403,8 +426,8 @@
             Console.WriteLine(ex.ToString());
             throw;
         }
-
     }
+
 
     //
     // The Uploaded File Class

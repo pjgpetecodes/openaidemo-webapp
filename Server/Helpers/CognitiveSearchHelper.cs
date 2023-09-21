@@ -10,6 +10,7 @@ using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using openaidemo_webapp.Shared;
+using Microsoft.AspNetCore.SignalR;
 
 namespace openaidemo_webapp.Server.Helpers
 {
@@ -27,7 +28,7 @@ namespace openaidemo_webapp.Server.Helpers
         //
         // Create or Update an Index for the supplied PDF Extraction Results
         //
-        public async Task<ExtractionResult> CreateOrUpdateIndex(ExtractionResult extractionResult)
+        public async Task<ExtractionResult> CreateOrUpdateIndex(ExtractionResult extractionResult, ISingleClientProxy signalRClient)
         {
 
             try
@@ -55,7 +56,7 @@ namespace openaidemo_webapp.Server.Helpers
                 indexClient.CreateOrUpdateIndex(GetIndex(indexName));
 
                 // Create the Vectors for the paragraphs
-                var indexDocuments = await ProcessExtractionsAsync(openAIClient, extractionResult.ExtractedParagraphs, extractionResult.FileName, extractionResult.Company, extractionResult.Year);
+                var indexDocuments = await ProcessExtractionsAsync(openAIClient, extractionResult.ExtractedParagraphs, extractionResult.FileName, extractionResult.Company, extractionResult.Year, signalRClient);
                 await searchClient.IndexDocumentsAsync(IndexDocumentsBatch.Upload(indexDocuments));
 
                 // Convert sampleDocuments back to ExtractionResult  
@@ -70,7 +71,7 @@ namespace openaidemo_webapp.Server.Helpers
                 {
                     return new ExtractedParagraph
                     {
-                        Id = document["Id"].ToString() ?? string.Empty,
+                        Id = document["Id"].ToString(),
                         Location = document["Location"].ToString() ?? string.Empty,
                         Title = document["Title"].ToString() ?? string.Empty,
                         Content = document["Content"].ToString() ?? string.Empty,
@@ -203,12 +204,17 @@ namespace openaidemo_webapp.Server.Helpers
         //
         // Generate Embeddings for all of the extracted PDF Paragraphs
         //
-        internal async Task<List<SearchDocument>> ProcessExtractionsAsync(OpenAIClient openAIClient, List<ExtractedParagraph> extractedParagraphs, String FileName, String Company, String Year)
+        internal async Task<List<SearchDocument>> ProcessExtractionsAsync(OpenAIClient openAIClient, List<ExtractedParagraph> extractedParagraphs, String FileName, String Company, String Year, ISingleClientProxy signalRClient)
         {
             List<SearchDocument> searchDocuments = new List<SearchDocument>();
 
+            await signalRClient.SendAsync("UpdateFileUploadStatus", $"Beginning processing of {extractedParagraphs.Count} extractions for {FileName}");
+
+            var index = 0;
+
             foreach (ExtractedParagraph extraction in extractedParagraphs)
             {
+                index++;
                 string title = extraction.Title?.ToString() ?? string.Empty;
                 string content = extraction.Content?.ToString() ?? string.Empty;
 
@@ -231,6 +237,9 @@ namespace openaidemo_webapp.Server.Helpers
 
                 // Create a new Cognitive Search Search Document from the Extracted Paragraph
                 searchDocuments.Add(new SearchDocument(extractionDict));
+
+                await signalRClient.SendAsync("UpdateFileUploadStatus", $"Processed {index} extractions of {extractedParagraphs.Count} for {FileName}");
+
             }
 
             return searchDocuments;
