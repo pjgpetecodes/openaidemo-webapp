@@ -50,7 +50,7 @@ namespace YourProjectName.Controllers
             catch (Exception ex)
             {
                 // Log the exception or handle it as needed  
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing the file.");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while processing the file: {ex}");
             }
         }
 

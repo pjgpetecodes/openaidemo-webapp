@@ -32,9 +32,9 @@ else
 }
 
 @code {
-    [Parameter] public List<CognitiveSearchResult> SourcesItems { get; set; }
-    [Parameter] public bool isLoading { get; set; }
-    private List<bool> expandedCards;
+    [Parameter] public List<CognitiveSearchResult> SourcesItems { get; set; } = new List<CognitiveSearchResult>();
+    [Parameter] public bool isLoading { get; set; } = false;
+    private List<bool> expandedCards = new List<bool>();
 
     protected override void OnParametersSet()
     {

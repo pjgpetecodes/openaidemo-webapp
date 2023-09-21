@@ -78,7 +78,7 @@
 
     <MudGrid Class="cognitive-chat-container">
         <MudItem xs="2" Class="chat-header">
-            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="HandleClearChat">Clear Chat</MudButton>
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="HandleClearChat" Class="clear-chat-button">Clear</MudButton>
         </MudItem>
         <MudItem xs="6" Class="chat-header text-center">
             <h3>Chat</h3>
@@ -137,7 +137,7 @@
 
 @code {
 
-    private HubConnection hubConnection;
+    private HubConnection? hubConnection;
     private ChatInput chatInput = new ChatInput();
     private List<OpenAIChatMessage> chatMessages = new List<OpenAIChatMessage>();
     private ElementReference messagesDiv;
@@ -214,7 +214,7 @@
             //
             // Fill the companies dropdown
             //
-            CognitiveSearchFacet companyFacet = cognitiveSearchFacetResults.Find(f => f.facetName == "company");
+            CognitiveSearchFacet? companyFacet = cognitiveSearchFacetResults.Find(f => f.facetName == "company");
 
             if (companyFacet != null)
             {
@@ -231,7 +231,7 @@
             //
             // Fill the Years dropdown
             //
-            CognitiveSearchFacet yearFacet = cognitiveSearchFacetResults.Find(f => f.facetName == "year");
+            CognitiveSearchFacet? yearFacet = cognitiveSearchFacetResults.Find(f => f.facetName == "year");
 
             if (yearFacet != null)
             {
@@ -257,22 +257,24 @@
         //
         // Fill all of the Filter Facets
         //
-        GetFilters();
+        await GetFilters();
 
     }
 
     //
     // Track if we're still connected to the SignalR hub
     //
-    public bool IsConnected =>
-    hubConnection.State == HubConnectionState.Connected;
+    public bool IsConnected => (hubConnection?.State ?? HubConnectionState.Disconnected) == HubConnectionState.Connected;
 
     //
     // Close the connection to the SignalR Hub when the page is closed
     //
     public async ValueTask DisposeAsync()
     {
-        await hubConnection.DisposeAsync();
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 
     //
@@ -297,7 +299,11 @@
     private async Task GetFilters()
     {
         isLoadingFilters = true;
-        await hubConnection.SendAsync("GetCogServiceFacets", "");
+
+        if (hubConnection != null)
+        {
+            await hubConnection.SendAsync("GetCogServiceFacets", "");
+        }
     }
 
     //
@@ -316,7 +322,11 @@
 
             chatMessages.Add(new OpenAIChatMessage {ChatBubbleId = chatMessageGuid,  Content = chatInput.Query, Type = "human" });
             await JS.InvokeVoidAsync("scrollToBottom", "messages");
-            await hubConnection.SendAsync("SendCogServiceQuery", chatInput.Query, includePreviousMessages ? previousMessages : new List<OpenAIChatMessage>(), SelectedCompany, SelectedYear);
+
+            if (hubConnection != null)
+            {
+                await hubConnection.SendAsync("SendCogServiceQuery", chatInput.Query, includePreviousMessages ? previousMessages : new List<OpenAIChatMessage>(), SelectedCompany, SelectedYear);
+            }
         }
     }  
 
@@ -325,7 +335,7 @@
     //
     // (Unused: Handled by markup)
     //
-    private async Task HandleKeyDown(KeyboardEventArgs e)
+    private void HandleKeyDown(KeyboardEventArgs e)
     {
         // if (e.Key == "Enter")
         // {
@@ -336,7 +346,7 @@
     //
     // Clear the Chat Window
     //
-    private async Task HandleClearChat()
+    private void HandleClearChat()
     {
         chatMessages.Clear();
         cognitiveSearchResults.Clear();
@@ -381,7 +391,7 @@
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<ExtractionResult>();
-                return result;
+                return result ?? new ExtractionResult();
             }
             else
             {
@@ -401,9 +411,8 @@
     //
     public class UploadedFile
     {
-        public string FileName { get; set; }
-        public string ContentType { get; set; }
-        // Add any other properties needed to represent the uploaded file
+        public string FileName { get; set; } = "";
+        public string ContentType { get; set; } = "";
     }
 
     //
@@ -411,7 +420,7 @@
     //
     public class ChatInput
     {
-        public string Query { get; set; }
+        public string Query { get; set; } = "";
     }
 
 }

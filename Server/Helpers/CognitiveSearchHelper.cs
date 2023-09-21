@@ -70,11 +70,11 @@ namespace openaidemo_webapp.Server.Helpers
                 {
                     return new ExtractedParagraph
                     {
-                        Id = document["Id"].ToString(),
-                        Location = document["Location"].ToString(),
-                        Title = document["Title"].ToString(),
-                        Content = document["Content"].ToString(),
-                        ContentVector = document["ContentVector"] as float[]
+                        Id = document["Id"].ToString() ?? string.Empty,
+                        Location = document["Location"].ToString() ?? string.Empty,
+                        Title = document["Title"].ToString() ?? string.Empty,
+                        Content = document["Content"].ToString() ?? string.Empty,
+                        ContentVector = document["ContentVector"] as float[] ?? new float[] { },
                     };
                 }).ToList();
 
@@ -82,7 +82,7 @@ namespace openaidemo_webapp.Server.Helpers
             }
             catch (Exception ex)
             {
-
+                System.Diagnostics.Debug.Print($"Error Creating Index: {ex}");
                 throw;
             }            
 
@@ -220,12 +220,12 @@ namespace openaidemo_webapp.Server.Helpers
                 IDictionary<string, object> extractionDict = new Dictionary<string, object>
                 {
                     { "Id", extraction.Id },
-                    { "FileName", FileName },
-                    { "Location", extraction.Location },
-                    { "Title", extraction.Title },
-                    { "Content", extraction.Content },
-                    { "Company", Company },
-                    { "Year", Year },
+                    { "FileName", FileName ?? string.Empty },
+                    { "Location", extraction.Location ?? string.Empty },
+                    { "Title", extraction.Title ?? string.Empty },
+                    { "Content", extraction.Content ?? string.Empty },
+                    { "Company", Company ?? string.Empty },
+                    { "Year", Year ?? string.Empty },
                     { "ContentVector", extraction.ContentVector }
                 };
 
@@ -314,7 +314,7 @@ namespace openaidemo_webapp.Server.Helpers
                     cognitiveSearchResult.FileName = result.Document["fileName"].ToString() ?? string.Empty;
                     cognitiveSearchResult.Title = result.Document["title"].ToString() ?? string.Empty;
                     cognitiveSearchResult.Location = result.Document["location"].ToString() ?? string.Empty;
-                    cognitiveSearchResult.Score = result.Score.ToString();
+                    cognitiveSearchResult.Score = result.Score.ToString() ?? string.Empty;
                     cognitiveSearchResult.Content = result.Document["content"].ToString() ?? string.Empty;
                     cognitiveSearchResult.Company = result.Document["company"].ToString() ?? string.Empty;
                     cognitiveSearchResult.Year = result.Document["year"].ToString() ?? string.Empty;
@@ -335,6 +335,7 @@ namespace openaidemo_webapp.Server.Helpers
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.Print($"Error performing Vector Search: {ex}");
                 throw;
             }
             
@@ -343,7 +344,7 @@ namespace openaidemo_webapp.Server.Helpers
         //
         // Get all of the available Facets
         //
-        public async Task<CognitiveSearchFacets> GetAllFacets(string query="")
+        public CognitiveSearchFacets GetAllFacets(string query="")
         {
 
             try
@@ -395,7 +396,7 @@ namespace openaidemo_webapp.Server.Helpers
                     {
                         CognitiveSearchFacetResult cognitiveSearchFacetResult = new CognitiveSearchFacetResult()
                         {
-                            facetResultName = facetResult.Value.ToString(),
+                            facetResultName = facetResult.Value.ToString() ?? string.Empty,
                             facetResultCount = facetResult.Count
                         };
                         cognitiveSearchFacet.cognitiveSearchFacetResults.Add(cognitiveSearchFacetResult);

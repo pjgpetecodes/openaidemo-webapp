@@ -57,12 +57,11 @@ namespace openaidemo_webapp.Server.Hubs
         {
             var cognitiveSearchHelper = new CognitiveSearchHelper(_config);
 
-            CognitiveSearchFacets cognitiveSearchFacetResults = await cognitiveSearchHelper.GetAllFacets();
+            CognitiveSearchFacets cognitiveSearchFacetResults = cognitiveSearchHelper.GetAllFacets();
 
             await Clients.Caller.SendAsync("CognitiveSearchFacetResults", cognitiveSearchFacetResults);
 
         }
-
 
     }
 }

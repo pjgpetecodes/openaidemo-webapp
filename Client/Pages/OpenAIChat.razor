@@ -11,7 +11,7 @@
 
 <MudGrid Class="chat-container">
     <MudItem xs="4" Class="chat-header">
-        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="HandleClearChat">Clear Chat</MudButton>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="HandleClearChat" Class="clear-chat-button">Clear</MudButton>
     </MudItem>
     <MudItem xs="4" Class="chat-header text-center">
         <h3>Chat</h3>
@@ -35,7 +35,7 @@
     <MudItem xs="12" Class="chat-input-container">
         <EditForm Model="chatInput" OnValidSubmit="SendQuery" class="chat-input-form">
             <div class="input-group" style="margin-top: 10px;">
-                <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown" />
+                <InputText id="query" class="form-control" @bind-Value="chatInput.Query" @onkeydown="HandleKeyDown"  />
                 <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
             </div>
         </EditForm>
@@ -45,8 +45,8 @@
 
 @code {
 
-    private HubConnection hubConnection;
-    private ChatInput chatInput = new ChatInput();
+    private HubConnection? hubConnection;
+    private ChatInput chatInput = new ChatInput() { Query = ""};
     private List<OpenAIChatMessage> chatMessages = new List<OpenAIChatMessage>();
     private ElementReference messagesDiv;
 
@@ -97,12 +97,14 @@
         await hubConnection.StartAsync();
     }
 
-    public bool IsConnected =>
-    hubConnection.State == HubConnectionState.Connected;
+    public bool IsConnected => (hubConnection?.State ?? HubConnectionState.Disconnected) == HubConnectionState.Connected;
 
     public async ValueTask DisposeAsync()
     {
-        await hubConnection.DisposeAsync();
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 
     private async Task SendQuery()
@@ -113,11 +115,16 @@
 
             chatMessages.Add(new OpenAIChatMessage {ChatBubbleId = chatMessageGuid,  Content = chatInput.Query, Type = "human" });
             await JS.InvokeVoidAsync("scrollToBottom", "messages");
-            await hubConnection.SendAsync("SendQuery", chatInput.Query, chatMessages);
+
+            if (hubConnection != null)
+            {
+                await hubConnection.SendAsync("SendQuery", chatInput.Query, chatMessages);
+            }
+
         }
     }  
 
-    private async Task HandleKeyDown(KeyboardEventArgs e)
+    private void HandleKeyDown(KeyboardEventArgs e)
     {
         // if (e.Key == "Enter")
         // {
@@ -127,13 +134,13 @@
 
     public class ChatInput
     {
-        public string Query { get; set; }
+        public required string Query { get; set; }
     }
 
     //
     // Clear the Chat Window
     //
-    private async Task HandleClearChat()
+    private void HandleClearChat()
     {
         chatMessages.Clear();
     }

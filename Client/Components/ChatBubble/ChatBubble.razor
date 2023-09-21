@@ -39,7 +39,7 @@
 
 @code {
     [Parameter]
-    public OpenAIChatMessage Message { get; set; }
+    public OpenAIChatMessage Message { get; set; } = new OpenAIChatMessage();
 
     private string chatBubbleStyle => $"chatBubbleStyle {Message.Type}";
     private string typingStyle => "typing";
