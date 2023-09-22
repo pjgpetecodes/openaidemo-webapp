@@ -58,6 +58,9 @@ namespace YourProjectName.Controllers
 
                     await signalRClient.SendAsync("UpdateFileUploadStatus", $"Updated contents of {file.FileName} in Cognitive Search Index");
 
+                    // Clear the extracted paragraphs as it takes too much memory and bandwidth.
+                    extractionResult.ExtractedParagraphs = new List<ExtractedParagraph>();
+
                     return Ok(extractionResult);
                 }
             }

@@ -386,12 +386,15 @@
                 await originalStream.CopyToAsync(memoryStream);
                 // Call the Blazor Server backend to upload the file
                 ExtractionResult extractionResult = await UploadFileToServer(memoryStream, file.Name, file.ContentType);
-                //extractionResults.Add(extractionResult);
+                extractionResults.Add(extractionResult);
 
                 uploadedFiles.Add(file);
                 StateHasChanged();
             }
         }
+
+        UploadStatus = $"File Upload Complete - Uploaded {files.Count} Files to Cognitive Search";
+        StateHasChanged();
 
         Console.WriteLine("File Upload Complete");
     }
