@@ -46,28 +46,14 @@
                 <div class="extraction-results-row row">
                     @if (extractionResults != null)
                     {
-                        <MudList>
+                        <MudChipSet Class="uploaded-files">
+
                             @foreach (var extractionResult in extractionResults)
                             {
-                                <MudExpansionPanel Icon="@Icons.Material.Filled.AttachFile" Text="@extractionResult.FileName">
-                                    <ChildContent>
-                                        <MudList>
-                                            @foreach (var extractedParagraph in extractionResult.ExtractedParagraphs)
-                                            {
-                                                <MudListItem>
-                                                    <MudCard>
-                                                        <MudCardContent class="extraction-results">
-                                                            <MudText Typo="Typo.h6">@extractedParagraph.Title</MudText>
-                                                            <MudText><code>@extractedParagraph.Content</code></MudText>
-                                                        </MudCardContent>
-                                                    </MudCard>
-                                                </MudListItem>
-                                            }
-                                        </MudList>
-                                    </ChildContent>
-                                </MudExpansionPanel>
+                                <MudChip Icon="@Icons.Material.Filled.Attachment" Color="Color.Primary">@extractionResult.FileName </MudChip>
                             }
-                        </MudList>
+
+                        </MudChipSet>
                     }
                 </div>
             </MudExpansionPanel>
@@ -319,6 +305,11 @@
     //
     private async Task GetFilters()
     {
+        Companies = new List<string>();
+        SelectedCompany = "";
+        Years = new List<string>();
+        SelectedYear = "";
+
         isLoadingFilters = true;
 
         if (hubConnection != null)
@@ -378,25 +369,40 @@
     //
     private async void UploadFiles(IReadOnlyList<IBrowserFile> files)
     {
-        foreach (var file in files)
+
+        try
         {
-            using (var originalStream = file.OpenReadStream(maxAllowedSize: 5000000))
-            using (var memoryStream = new MemoryStream())
+            foreach (var file in files)
             {
-                await originalStream.CopyToAsync(memoryStream);
-                // Call the Blazor Server backend to upload the file
-                ExtractionResult extractionResult = await UploadFileToServer(memoryStream, file.Name, file.ContentType);
-                extractionResults.Add(extractionResult);
+                using (var originalStream = file.OpenReadStream(maxAllowedSize: 5000000))
+                using (var memoryStream = new MemoryStream())
+                {
+                    await originalStream.CopyToAsync(memoryStream);
+                    // Call the Blazor Server backend to upload the file
+                    ExtractionResult extractionResult = await UploadFileToServer(memoryStream, file.Name, file.ContentType);
+                    extractionResults.Add(extractionResult);
 
-                uploadedFiles.Add(file);
-                StateHasChanged();
+                    uploadedFiles.Add(file);
+                    StateHasChanged();
+                }
             }
+
+            UploadStatus = $"File Upload Complete - Uploaded {files.Count} Files to Cognitive Search";
+            StateHasChanged();
+            Console.WriteLine("File Upload Complete");
+            //
+            // Fill all of the Filter Facets
+            //
+            await GetFilters();
+
         }
+        catch (Exception ex)
+        {
+            UploadStatus = $"An error occurred - {ex.Message}";
+            StateHasChanged();
+            throw;
+        }        
 
-        UploadStatus = $"File Upload Complete - Uploaded {files.Count} Files to Cognitive Search";
-        StateHasChanged();
-
-        Console.WriteLine("File Upload Complete");
     }
 
     //
@@ -421,7 +427,8 @@
             }
             else
             {
-                throw new ApplicationException($"Error uploading file: {response.ReasonPhrase}");
+                string errorMessage = await response.Content.ReadAsStringAsync();
+                throw new ApplicationException($"Error uploading file: {response.ReasonPhrase} - {errorMessage}");
             }
         }
         catch (Exception ex)

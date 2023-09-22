@@ -237,3 +237,12 @@ a, .btn-link {
 .resources-header {
     background-color: #1b6ec2;
 }
+
+.upload-status {
+    text-align: center;
+    padding-top: 30px;
+}
+
+.uploaded-files {
+    text-align: center;
+}
