@@ -24,7 +24,7 @@ namespace openaidemo_webapp.Server.Helpers
 
         public async Task<ExtractionResult> ExtractParagraphs(Stream stream, String filename)
         {
-            // Get the Company Name from the file name
+            // Get the Company Name from the file name  
             string[] parts = filename.Split('-');
             string companyName = "";
             string year = "";
@@ -36,47 +36,69 @@ namespace openaidemo_webapp.Server.Helpers
             }
             else
             {
-                // Handle the case where the filename doesn't follow the expected format  
+                // Handle the case where the filename doesn't follow the expected format    
             }
 
-            // Extract the paragraphs of text from the document
+            // Extract the paragraphs of text from the document  
             using (PdfDocument document = PdfDocument.Open(stream))
             {
                 List<ExtractedParagraph> extractedParagraphs = new List<ExtractedParagraph>();
-                string pendingContent = ""; // Add this variable to store content that needs to be appended  
+                string pendingContent = ""; // Add this variable to store content that needs to be appended    
 
                 for (int pageIndex = 0; pageIndex < document.NumberOfPages; pageIndex++)
                 {
                     Page page = document.GetPage(pageIndex + 1);
 
-                    // Extract words and blocks    
+                    // Extract words and blocks      
                     var words = NearestNeighbourWordExtractor.Instance.GetWords(page.Letters);
                     var blocks = DocstrumBoundingBoxes.Instance.GetBlocks(words);
 
-                    // Combine words in each block into paragraphs    
+                    // Combine words in each block into paragraphs      
                     int paragraphIndex = 0;
                     foreach (var block in blocks)
                     {
                         var paragraphContent = string.Join(" ", block.Text);
 
-                        // Check if the pending content should be appended  
+                        // Check if the pending content should be appended    
                         if (!string.IsNullOrEmpty(pendingContent))
                         {
                             paragraphContent = pendingContent + " " + paragraphContent;
                             pendingContent = "";
                         }
 
-                        // Count the number of words in the paragraph  
+                        // Count the number of words in the paragraph    
                         int wordCount = paragraphContent.Split(' ').Length;
 
-                        // If the paragraph has less than 50 words, store it in pendingContent  
+                        // If the paragraph has less than 250 words, store it in pendingContent    
                         if (wordCount < 250)
                         {
                             pendingContent = paragraphContent;
                         }
                         else
                         {
-                            // Add the paragraph to the extractedParagraphs list  
+                            // Check if the paragraphContent exceeds 7000 characters  
+                            while (paragraphContent.Length > 7000)
+                            {
+                                // Split the paragraphContent into smaller paragraphs  
+                                var subParagraph = paragraphContent.Substring(0, 7000);
+                                int lastSpaceIndex = subParagraph.LastIndexOf(' ');
+                                subParagraph = subParagraph.Substring(0, lastSpaceIndex);
+
+                                // Add the smaller paragraph to the extractedParagraphs list  
+                                extractedParagraphs.Add(new ExtractedParagraph
+                                {
+                                    Id = Guid.NewGuid().ToString(),
+                                    Location = $"{pageIndex + 1}-{paragraphIndex + 1}",
+                                    Title = $"Page {pageIndex + 1} - Paragraph {paragraphIndex + 1}",
+                                    Content = subParagraph
+                                });
+                                paragraphIndex++;
+
+                                // Update paragraphContent  
+                                paragraphContent = paragraphContent.Substring(lastSpaceIndex + 1);
+                            }
+
+                            // Add the remaining paragraphContent to the extractedParagraphs list  
                             extractedParagraphs.Add(new ExtractedParagraph
                             {
                                 Id = Guid.NewGuid().ToString(),
@@ -89,7 +111,7 @@ namespace openaidemo_webapp.Server.Helpers
                     }
                 }
 
-                // Add any remaining pending content as the last paragraph  
+                // Add any remaining pending content as the last paragraph    
                 if (!string.IsNullOrEmpty(pendingContent))
                 {
                     extractedParagraphs.Add(new ExtractedParagraph
