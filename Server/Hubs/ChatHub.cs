@@ -34,11 +34,11 @@ namespace openaidemo_webapp.Server.Hubs
         //
         // Send a Query to both Azure Cognitive Services and OpenAI using the Helpers
         //
-        public async Task SendCogServiceQuery(string query, List<OpenAIChatMessage> previousMessages, string company, string year)
+        public async Task SendCogSearchQuery(string query, List<OpenAIChatMessage> previousMessages, string company, string year)
         {
             var cognitiveSearchHelper = new CognitiveSearchHelper(_config);
 
-            List<CognitiveSearchResult> cogSearchResults = await cognitiveSearchHelper.SingleVectorSearch(query, 6, company, year);
+            List<CognitiveSearchResult> cogSearchResults = await cognitiveSearchHelper.SemanticHybridSearch(query, 6, company, year);
 
             CognitiveSearchResults cognitiveSearchResults = new CognitiveSearchResults();
             cognitiveSearchResults.CognitiveSearchResultList = cogSearchResults;
@@ -51,9 +51,43 @@ namespace openaidemo_webapp.Server.Hubs
         }
 
         //
+        // Query Cognitive Search on its own
+        //
+        public async Task QueryCogSearch(string query, string searchType)
+        {
+            var cognitiveSearchHelper = new CognitiveSearchHelper(_config);
+
+            List<CognitiveSearchResult> cogSearchResults = new List<CognitiveSearchResult>();
+
+            switch (searchType)
+            {
+                case "VectorSearch":
+
+                    cogSearchResults = await cognitiveSearchHelper.SingleVectorSearch(query, 6);
+                    break;
+
+                case "SimpleHybridSearch":
+
+                    cogSearchResults = await cognitiveSearchHelper.SimpleHybridSearch(query, 6);
+                    break;
+
+                case "SemanticHybridSearch":
+
+                    cogSearchResults = await cognitiveSearchHelper.SemanticHybridSearch(query, 6);
+                    break;
+            }
+
+            CognitiveSearchResults cognitiveSearchResults = new CognitiveSearchResults();
+            cognitiveSearchResults.CognitiveSearchResultList = cogSearchResults;
+
+            await Clients.Caller.SendAsync("CognitiveSearchResults", cognitiveSearchResults);
+
+        }
+
+        //
         // Get a list of the Cognitive Service Index Facets
         //
-        public async Task GetCogServiceFacets(string query = "")
+        public async Task GetCogSearchFacets(string query = "")
         {
             var cognitiveSearchHelper = new CognitiveSearchHelper(_config);
 

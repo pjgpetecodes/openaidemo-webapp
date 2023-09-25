@@ -1,0 +1,131 @@
+﻿@page "/cogsearch"
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Components.Forms
+@using openaidemo_webapp.Client.Components.ChatBubble
+@using openaidemo_webapp.Client.Components.Sources
+@using openaidemo_webapp.Client.Components.SearchFilters
+@using openaidemo_webapp.Shared
+@using System.Net.Http
+@using System.Net.Http.Json
+@using MudBlazor
+
+@inject HttpClient Http
+
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<PageTitle>Azure Cognitive Search</PageTitle>
+
+<div class="options-container row container">
+    <MudSelect T="string" Label="Search Type" @bind-Value="SelectedSearchType" Class="cog-search-options">
+        <MudSelectItem Value="@("VectorSearch")">Vector Search</MudSelectItem>
+        <MudSelectItem Value="@("SimpleHybridSearch")">Simple Hybrid Search</MudSelectItem>
+        <MudSelectItem Value="@("SemanticHybridSearch")">Semantic Hybrid Search</MudSelectItem>
+    </MudSelect>
+</div>
+
+
+<MudGrid Class="cog-search-container">
+    <MudItem xs="4" Class="chat-header">
+    </MudItem>
+    <MudItem xs="4" Class="chat-header text-center">
+        <h3>Results</h3>
+    </MudItem>
+    <MudItem xs="4" Class="chat-header">
+    </MudItem>
+
+    <MudItem xs="12" Class="cognitive-search-sources-container">
+        <div class="sources-column">
+            <Sources SourcesItems="cognitiveSearchResults" isLoading="isLoadingSources" />
+        </div>
+    </MudItem>
+
+    <MudItem xs="12" Class="chat-input-container">
+        <EditForm Model="chatInput" OnValidSubmit="SendQuery" class="chat-input-form">
+            <div class="input-group" style="margin-top: 10px;">
+                <InputText id="query" class="form-control" @bind-Value="chatInput.Query" />
+                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> </button>
+            </div>
+        </EditForm>
+    </MudItem>
+
+</MudGrid>
+
+@code {
+
+    private HubConnection? hubConnection;
+    private ChatInput chatInput = new ChatInput();
+    List<CognitiveSearchResult> cognitiveSearchResults = new List<CognitiveSearchResult>();
+    private bool isLoadingSources = false;
+
+    private string SelectedSearchType = "VectorSearch";
+
+    //
+    // Initialise the SignalR connection when the page loads
+    //
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+        .WithAutomaticReconnect()
+        .Build();
+
+        //
+        // The Cognitive Search results have been received
+        //
+        hubConnection.On<CognitiveSearchResults>("CognitiveSearchResults", (cogSearchResults) =>
+        {
+            isLoadingSources = false;
+            cognitiveSearchResults = (List<CognitiveSearchResult>)cogSearchResults.CognitiveSearchResultList;
+            StateHasChanged();
+        });
+
+        //
+        // Connect to the SignalR Hub
+        //
+        await hubConnection.StartAsync();
+
+    }
+
+    //
+    // Track if we're still connected to the SignalR hub
+    //
+    public bool IsConnected => (hubConnection?.State ?? HubConnectionState.Disconnected) == HubConnectionState.Connected;
+
+    //
+    // Close the connection to the SignalR Hub when the page is closed
+    //
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+    //
+    // Send a Cognitive Search Query
+    //
+    private async Task SendQuery()
+    {
+        if (!string.IsNullOrWhiteSpace(chatInput.Query))
+        {
+            cognitiveSearchResults = new List<CognitiveSearchResult>();
+            isLoadingSources = true;
+
+            if (hubConnection != null)
+            {
+                await hubConnection.SendAsync("QueryCogSearch", chatInput.Query, SelectedSearchType);
+            }
+        }
+    }  
+
+    //
+    // Chat input class
+    //
+    public class ChatInput
+    {
+        public string Query { get; set; } = "";
+    }
+
+}

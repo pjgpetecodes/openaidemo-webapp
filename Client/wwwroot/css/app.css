@@ -116,6 +116,10 @@ a, .btn-link {
     height: calc(100vh - 5rem);
 }
 
+.cog-search-container {
+    height: calc(100vh - 11rem);
+}
+
 .cognitive-chat-container {
     height: calc(100vh - 19rem);
 }
@@ -134,7 +138,7 @@ a, .btn-link {
     margin-right: 0px;
 }
 
-.options-container, .chat-container, .cognitive-chat-container {
+.options-container, .chat-container, .cognitive-chat-container, .cog-search-container {
     border: 1px solid #ccc;
     border-radius: 10px;
     margin-bottom: 20px;
@@ -209,6 +213,10 @@ a, .btn-link {
 
 .cognitive-chat-sources-container {
     height: 100%;
+}
+
+.cognitive-search-sources-container {
+    height: calc(100% - 140px);
 }
 
 .chat-window {

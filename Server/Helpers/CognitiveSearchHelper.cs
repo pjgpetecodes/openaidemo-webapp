@@ -19,10 +19,55 @@ namespace openaidemo_webapp.Server.Helpers
         private readonly IConfiguration _config;
         private const int ModelDimensions = 1536;
         private const string SemanticSearchConfigName = "my-semantic-config";
-        
+
+        private string cognitiveSearchKey;
+        private string cognitiveSearchEndpoint;
+        private string indexName;
+
+        private string openAIApiKey;
+        private string openAIEndpoint;
+        private string embeddingModelDeploymentName;
+
+        private AzureKeyCredential openAICredential;
+        private OpenAIClient openAIClient;
+
+        private AzureKeyCredential searchCredential;
+        private SearchIndexClient indexClient;
+        private SearchClient searchClient;
+
+        //
+        // Class Newed Up
+        //
         public CognitiveSearchHelper(IConfiguration config)
         {
             _config = config;
+
+            InitialiseSearchObjects();
+        }
+
+        //
+        // Initialise the Search and OpenAI Objects
+        //
+        private void InitialiseSearchObjects()
+        {
+            // Cognitive Search Environment Variables
+            cognitiveSearchKey = _config["CognitiveSearch:Key"] ?? string.Empty;
+            cognitiveSearchEndpoint = $"https://{_config["CognitiveSearch:InstanceName"]}.search.windows.net";
+            indexName = _config["CognitiveSearch:IndexName"] ?? string.Empty;
+
+            // Open AI Environment Variables
+            openAIApiKey = _config["OpenAI:Key"] ?? string.Empty;
+            openAIEndpoint = $"https://{_config["OpenAI:InstanceName"]}.openai.azure.com";
+            embeddingModelDeploymentName = _config["OpenAI:EmbedDeploymentName"] ?? string.Empty;
+
+            // Initialize OpenAI client  
+            openAICredential = new AzureKeyCredential(openAIApiKey);
+            openAIClient = new OpenAIClient(new Uri(openAIEndpoint), openAICredential);
+
+            // Initialize Azure Cognitive Search clients  
+            searchCredential = new AzureKeyCredential(cognitiveSearchKey);
+            indexClient = new SearchIndexClient(new Uri(cognitiveSearchEndpoint), searchCredential);
+            searchClient = indexClient.GetSearchClient(indexName);
         }
 
         //
@@ -30,28 +75,9 @@ namespace openaidemo_webapp.Server.Helpers
         //
         public async Task<ExtractionResult> CreateOrUpdateIndex(ExtractionResult extractionResult, ISingleClientProxy signalRClient)
         {
-
             try
             {
-                // Cognitive Search Environment Variables
-                var cognitiveSearchKey = _config["CognitiveSearch:Key"] ?? string.Empty;
-                var cognitiveSearchEndpoint = $"https://{_config["CognitiveSearch:InstanceName"]}.search.windows.net";
-                var indexName = _config["CognitiveSearch:IndexName"] ?? string.Empty;
-
-                // Open AI Environment Variables
-                var openAIApiKey = _config["OpenAI:Key"] ?? string.Empty;
-                var openAIEndpoint = $"https://{_config["OpenAI:InstanceName"]}.openai.azure.com";
-                var embeddingModelDeploymentName = _config["OpenAI:EmbedDeploymentName"] ?? string.Empty;
-
-                // Initialize OpenAI client  
-                var credential = new AzureKeyCredential(openAIApiKey);
-                var openAIClient = new OpenAIClient(new Uri(openAIEndpoint), credential);
-
-                // Initialize Azure Cognitive Search clients  
-                var searchCredential = new AzureKeyCredential(cognitiveSearchKey);
-                var indexClient = new SearchIndexClient(new Uri(cognitiveSearchEndpoint), searchCredential);
-                var searchClient = indexClient.GetSearchClient(indexName);
-
+                
                 // Create the search index  
                 indexClient.CreateOrUpdateIndex(GetIndex(indexName));
 
@@ -263,25 +289,6 @@ namespace openaidemo_webapp.Server.Helpers
         {
             try
             {
-                // Cognitive Search Environment Variables
-                var cognitiveSearchKey = _config["CognitiveSearch:Key"] ?? string.Empty;
-                var cognitiveSearchEndpoint = $"https://{_config["CognitiveSearch:InstanceName"]}.search.windows.net";
-                var indexName = _config["CognitiveSearch:IndexName"] ?? string.Empty;
-
-                // Open AI Environment Variables
-                var openAIApiKey = _config["OpenAI:Key"] ?? string.Empty;
-                var openAIEndpoint = $"https://{_config["OpenAI:InstanceName"]}.openai.azure.com";
-                var embeddingModelDeploymentName = _config["OpenAI:EmbedDeploymentName"] ?? string.Empty;
-
-                // Initialize OpenAI client  
-                var credential = new AzureKeyCredential(openAIApiKey);
-                var openAIClient = new OpenAIClient(new Uri(openAIEndpoint), credential);
-
-                // Initialize Azure Cognitive Search clients  
-                var searchCredential = new AzureKeyCredential(cognitiveSearchKey);
-                var indexClient = new SearchIndexClient(new Uri(cognitiveSearchEndpoint), searchCredential);
-                var searchClient = indexClient.GetSearchClient(indexName);
-
                 // Generate the embedding for the query  
                 var queryEmbeddings = await GenerateEmbeddings(query, openAIClient);
 
@@ -351,6 +358,162 @@ namespace openaidemo_webapp.Server.Helpers
         }
 
         //
+        // Perform a Hybrid (Standard + a Vector) Search
+        //
+        public async Task<List<CognitiveSearchResult>> SimpleHybridSearch(string query, int k = 6, string company = "", string year = "")
+        {
+            try
+            {
+                // Generate the embedding for the query  
+                var queryEmbeddings = await GenerateEmbeddings(query, openAIClient);
+
+                // Perform the vector similarity search  
+                var searchOptions = new SearchOptions
+                {
+                    Vectors = { new() { Value = queryEmbeddings.ToArray(), KNearestNeighborsCount = 6, Fields = { "contentVector" } } },
+                    Size = k,
+                    Select = { "title", "content", "company", "location", "fileName", "year" },
+                };
+
+                // Add any filters passed in
+                if (company != "")
+                {
+                    searchOptions.Filter = $"company eq '{company}'";
+
+                    if (year != "")
+                    {
+                        searchOptions.Filter += $" and year eq '{year}'";
+
+                    }
+                }
+                else if (year != "")
+                {
+                    searchOptions.Filter = $"year eq '{year}'";
+                }
+
+                SearchResults<SearchDocument> response = await searchClient.SearchAsync<SearchDocument>(query, searchOptions);
+
+                int count = 0;
+                List<CognitiveSearchResult> cognitiveSearchResults = new List<CognitiveSearchResult>();
+
+                await foreach (SearchResult<SearchDocument> result in response.GetResultsAsync())
+                {
+                    count++;
+
+                    CognitiveSearchResult cognitiveSearchResult = new CognitiveSearchResult();
+                    cognitiveSearchResult.Id = count;
+                    cognitiveSearchResult.FileName = result.Document["fileName"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Title = result.Document["title"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Location = result.Document["location"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Score = result.Score.ToString() ?? string.Empty;
+                    cognitiveSearchResult.Content = result.Document["content"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Company = result.Document["company"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Year = result.Document["year"].ToString() ?? string.Empty;
+
+                    cognitiveSearchResults.Add(cognitiveSearchResult);
+
+                    System.Diagnostics.Debug.Print($"Title: {result.Document["title"]}");
+                    System.Diagnostics.Debug.Print($"Location: {result.Document["location"]}\n");
+                    System.Diagnostics.Debug.Print($"Score: {result.Score}\n");
+                    System.Diagnostics.Debug.Print($"Content: {result.Document["content"]}\n");
+                    System.Diagnostics.Debug.Print($"Company: {result.Document["company"]}\n");
+                    System.Diagnostics.Debug.Print($"Year: {result.Document["year"]}\n");
+                }
+
+                System.Diagnostics.Debug.Print($"Total Results: {count}");
+
+                return cognitiveSearchResults;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.Print($"Error performing Vector Search: {ex}");
+                throw;
+            }
+        }
+
+        //
+        // Perform a Semantic Hybrid Search
+        //
+        public async Task<List<CognitiveSearchResult>> SemanticHybridSearch(string query, int k = 10, string company = "", string year = "")
+        {
+            try
+            {
+                // Generate the embedding for the query  
+                var queryEmbeddings = await GenerateEmbeddings(query, openAIClient);
+
+                // Perform the vector similarity search  
+                var searchOptions = new SearchOptions
+                {
+                    Vectors = { new() { Value = queryEmbeddings.ToArray(), KNearestNeighborsCount = 6, Fields = { "contentVector" } } },
+                    Size = k,
+                    QueryType = SearchQueryType.Semantic,
+                    QueryLanguage = QueryLanguage.EnUs,
+                    SemanticConfigurationName = SemanticSearchConfigName,
+                    QueryCaption = QueryCaptionType.Extractive,
+                    QueryAnswer = QueryAnswerType.Extractive,
+                    QueryCaptionHighlightEnabled = true,
+                    Select = { "title", "content", "company", "location", "fileName", "year" },
+                };
+
+                // Add any filters passed in
+                if (company != "")
+                {
+                    searchOptions.Filter = $"company eq '{company}'";
+
+                    if (year != "")
+                    {
+                        searchOptions.Filter += $" and year eq '{year}'";
+
+                    }
+                }
+                else if (year != "")
+                {
+                    searchOptions.Filter = $"year eq '{year}'";
+                }
+
+                SearchResults<SearchDocument> response = await searchClient.SearchAsync<SearchDocument>(query, searchOptions);
+
+                int count = 0;
+                List<CognitiveSearchResult> cognitiveSearchResults = new List<CognitiveSearchResult>();
+
+                await foreach (SearchResult<SearchDocument> result in response.GetResultsAsync())
+                {
+                    count++;
+
+                    CognitiveSearchResult cognitiveSearchResult = new CognitiveSearchResult();
+                    cognitiveSearchResult.Id = count;
+                    cognitiveSearchResult.FileName = result.Document["fileName"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Title = result.Document["title"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Location = result.Document["location"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Score = result.Score.ToString() ?? string.Empty;
+                    cognitiveSearchResult.Content = result.Document["content"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Company = result.Document["company"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.Year = result.Document["year"].ToString() ?? string.Empty;
+                    cognitiveSearchResult.captionHighlight = result.Captions.FirstOrDefault().Highlights ?? string.Empty;
+                    cognitiveSearchResult.captionText = result.Captions.FirstOrDefault().Text ?? string.Empty;
+
+                    cognitiveSearchResults.Add(cognitiveSearchResult);
+
+                    System.Diagnostics.Debug.Print($"Title: {result.Document["title"]}");
+                    System.Diagnostics.Debug.Print($"Location: {result.Document["location"]}\n");
+                    System.Diagnostics.Debug.Print($"Score: {result.Score}\n");
+                    System.Diagnostics.Debug.Print($"Content: {result.Document["content"]}\n");
+                    System.Diagnostics.Debug.Print($"Company: {result.Document["company"]}\n");
+                    System.Diagnostics.Debug.Print($"Year: {result.Document["year"]}\n");
+                }
+
+                System.Diagnostics.Debug.Print($"Total Results: {count}");
+
+                return cognitiveSearchResults;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.Print($"Error performing Vector Search: {ex}");
+                throw;
+            }
+        }
+
+        //
         // Get all of the available Facets
         //
         public CognitiveSearchFacets GetAllFacets(string query="")
@@ -358,15 +521,6 @@ namespace openaidemo_webapp.Server.Helpers
 
             try
             {
-                var cognitiveSearchKey = _config["CognitiveSearch:Key"] ?? string.Empty;
-                var cognitiveSearchEndpoint = $"https://{_config["CognitiveSearch:InstanceName"]}.search.windows.net";
-                var indexName = _config["CognitiveSearch:IndexName"] ?? string.Empty;
-
-                // Initialize Azure Cognitive Search clients  
-                var searchCredential = new AzureKeyCredential(cognitiveSearchKey);
-                var indexClient = new SearchIndexClient(new Uri(cognitiveSearchEndpoint), searchCredential);
-                var searchClient = indexClient.GetSearchClient(indexName);
-
                 SearchOptions options;
                 Response<SearchResults<CognitiveSearchResult>> response;
                 IDictionary<string, IList<FacetResult>> facetResults;

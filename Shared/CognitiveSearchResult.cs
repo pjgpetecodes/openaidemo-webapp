@@ -19,6 +19,8 @@ namespace openaidemo_webapp.Shared
         public string Content { get; set; }
         public string Company { get; set; }
         public string Year { get; set; }
+        public string captionHighlight { get; set; }
+        public string captionText { get; set; }
 
     }
 }

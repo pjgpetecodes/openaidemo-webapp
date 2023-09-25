@@ -314,7 +314,7 @@
 
         if (hubConnection != null)
         {
-            await hubConnection.SendAsync("GetCogServiceFacets", "");
+            await hubConnection.SendAsync("GetCogSearchFacets", "");
         }
     }
 
@@ -337,7 +337,7 @@
 
             if (hubConnection != null)
             {
-                await hubConnection.SendAsync("SendCogServiceQuery", chatInput.Query, includePreviousMessages ? previousMessages : new List<OpenAIChatMessage>(), SelectedCompany, SelectedYear);
+                await hubConnection.SendAsync("SendCogSearchQuery", chatInput.Query, includePreviousMessages ? previousMessages : new List<OpenAIChatMessage>(), SelectedCompany, SelectedYear);
             }
         }
     }  
