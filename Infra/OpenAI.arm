@@ -1,0 +1,61 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "deploymentName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the deployment."
+            }
+        },
+        "guidValue": {
+            "type": "string",
+            "defaultValue": "[newGuid()]"
+        }
+    },
+    "variables": {
+        "resourceNamePrefix": "[concat(parameters('deploymentName'), '-')]",
+        "openAIResourceID": "[concat(variables('resourceNamePrefix'), 'cognitiveservices-', parameters('guidValue'))]"
+
+    },
+    "resources": [
+        {
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2023-05-01",
+            "name": "[variables('openAIResourceID')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "S0",
+                "tier": "Standard",
+                "capacity": 1
+            },
+            "kind": "TextAnalytics",
+            "properties": {
+                "apiProperties": {
+                    "customSubDomainName": "openai",
+                    "publicNetworkAccess": "Enabled"
+                }                   
+            }
+        },
+        {
+            "type": "Microsoft.CognitiveServices/accounts/deployments",
+            "apiVersion": "2023-05-01",
+            "name": "[concat(variables('openAIResourceID'), '/deployments/gpt-35-turbo')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "deploymentType": "OpenAI",
+                "subscriptionKey": "[listKeys(concat(variables('resourceNamePrefix'), 'cognitiveservices-', parameters('guidValue')), '2021-04-30-preview').key1]"
+            }
+        },
+        {
+            "type": "Microsoft.CognitiveServices/accounts/deployments",
+            "apiVersion": "2023-05-01",
+            "name": "[concat(variables('openAIResourceID'), '/deployments/text-embedding-ada-002')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "deploymentType": "OpenAI",
+                "subscriptionKey": "[listKeys(concat(variables('resourceNamePrefix'), 'cognitiveservices-', parameters('guidValue')), '2021-04-30-preview').key1]"
+            }
+        }
+    ]
+}
