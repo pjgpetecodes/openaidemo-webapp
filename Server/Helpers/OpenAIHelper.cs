@@ -148,9 +148,9 @@ namespace openaidemo_webapp.Server.Helpers
 
             System.Diagnostics.Debug.Print($"Input: {prompt}");
             
-            var initPrompt = @"You are an AI Assistant by Pete Codes who is an expert in Accounting, Shareholding and Management.
-                              Your task is to help Pete Codes gain insights from the financial documents.
-                              You will be given a question and extracted parts of Annual Reports and Shareholders Letters
+            var initPrompt = @"You are an AI Assistant by Pete Gallagher, you are an expert in supplied documents.
+                              Your task is to help Pete Gallagher gain insights from the documents.
+                              You will be given a question and extracted parts of documents from a variety of sources
                               Provide a clear and structured answer based on the context provided.
                               Return any tables and relevant content as html.
                               When relevant, use bullet points and lists to structure your answers.";
@@ -158,12 +158,11 @@ namespace openaidemo_webapp.Server.Helpers
             initPrompt += $"The current date is {DateTime.Now.ToShortDateString()}";
 
             var sourcesPrompt = @"When relevant, use facts and numbers from the following documents in your answer.
-                              Whenever you use information from a document, reference it at the end of the sentence (ex: [DOC 2 - FileName]).
+                              Whenever you use information from a referenced document, reference it at the end of the sentence (ex: [DOC 2 - FileName]).
                               You don't have to use all documents, only if it makes sense in the conversation.
+                              If no documents are provided, then do not add a reference.
                               If no relevant information to answer the question is present in the documents,
-                              just say you don't have enough information to answer.
-                           
-                              ";
+                              just say you don't have enough information to answer.";
 
 
             // Filter and sort the sources by Score property in descending order  
@@ -173,7 +172,7 @@ namespace openaidemo_webapp.Server.Helpers
 
             // Add the filtered and sorted sources to the sourcesPrompt  
             var index = 0;
-            foreach (var source in filteredAndSortedCognitiveSearchResults)
+            foreach (var source in cognitiveSearchResults)
             {
                 index++;
                 sourcesPrompt += $"DOC {index} (FileName: {source.FileName}, Company: {source.Company}, Year: {source.Year}): {source.Content}\n";

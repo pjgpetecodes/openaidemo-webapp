@@ -121,15 +121,20 @@ namespace openaidemo_webapp.Server.Helpers
         internal static SearchIndex GetIndex(string name)
         {
             // Define the name of the vector search configuration.  
+            string vectorSearchProfileName = "my-vector-profile";
             string vectorSearchConfigName = "my-vector-config";
 
             // Create a new SearchIndex object with the specified name.  
-            SearchIndex searchIndex = new(name)
+            SearchIndex searchIndex = new SearchIndex(name)
             {
                 // Configure the vector search settings.  
-                VectorSearch = new()
+                VectorSearch = new VectorSearch()
                 {
-                    AlgorithmConfigurations =
+                    Profiles =
+                    {
+                        new VectorSearchProfile(vectorSearchProfileName, vectorSearchConfigName)
+                    },
+                    Algorithms =
                     {  
                         // Use the HNSW vector search algorithm with the specified configuration name.  
                         new HnswVectorSearchAlgorithmConfiguration(vectorSearchConfigName)
@@ -211,14 +216,14 @@ namespace openaidemo_webapp.Server.Helpers
                         IsSearchable = true,
                         IsFacetable = false,
                         VectorSearchDimensions = ModelDimensions,
-                        VectorSearchConfiguration = vectorSearchConfigName
+                        VectorSearchProfile = vectorSearchProfileName
                     },
                     new SearchField("contentVector", SearchFieldDataType.Collection(SearchFieldDataType.Single))
                     {
                         IsSearchable = true,
                         IsFacetable = false,
                         VectorSearchDimensions = ModelDimensions,
-                        VectorSearchConfiguration = vectorSearchConfigName
+                        VectorSearchProfile = vectorSearchProfileName
                     }
                 }
             };
@@ -295,7 +300,8 @@ namespace openaidemo_webapp.Server.Helpers
                 // Perform the vector similarity search  
                 var searchOptions = new SearchOptions
                 {
-                    Vectors = { new() { Value = queryEmbeddings.ToArray(), KNearestNeighborsCount = 6, Fields = { "contentVector" } } },
+                   
+                    VectorQueries = { new RawVectorQuery() { Vector = queryEmbeddings.ToArray(), KNearestNeighborsCount = 6, Fields = { "contentVector" } } },
                     Size = k,
                     Select = { "title", "content", "company", "location", "fileName", "year" },
                 };
@@ -347,6 +353,15 @@ namespace openaidemo_webapp.Server.Helpers
 
                 System.Diagnostics.Debug.Print($"Total Results: {count}");
 
+                // Filter and sort the sources by Score property in descending order  
+                List<CognitiveSearchResult> filteredAndSortedCognitiveSearchResults = cognitiveSearchResults
+                    .Where(source => Convert.ToDouble(source.Score) > 0.30)
+                    .OrderByDescending(source => source.Score).ToList();
+
+                System.Diagnostics.Debug.Print($"Filtered Results: {filteredAndSortedCognitiveSearchResults.Count}");
+
+                //return filteredAndSortedCognitiveSearchResults;
+
                 return cognitiveSearchResults;
             }
             catch (Exception ex)
@@ -370,7 +385,7 @@ namespace openaidemo_webapp.Server.Helpers
                 // Perform the vector similarity search  
                 var searchOptions = new SearchOptions
                 {
-                    Vectors = { new() { Value = queryEmbeddings.ToArray(), KNearestNeighborsCount = 6, Fields = { "contentVector" } } },
+                    VectorQueries = { new RawVectorQuery() { Vector = queryEmbeddings.ToArray(), KNearestNeighborsCount = 6, Fields = { "contentVector" } } },
                     Size = k,
                     Select = { "title", "content", "company", "location", "fileName", "year" },
                 };
@@ -422,7 +437,17 @@ namespace openaidemo_webapp.Server.Helpers
 
                 System.Diagnostics.Debug.Print($"Total Results: {count}");
 
+                // Filter and sort the sources by Score property in descending order  
+                List<CognitiveSearchResult> filteredAndSortedCognitiveSearchResults = cognitiveSearchResults
+                    .Where(source => Convert.ToDouble(source.Score) > 0.30)
+                    .OrderByDescending(source => source.Score).ToList();
+
+                System.Diagnostics.Debug.Print($"Filtered Results: {filteredAndSortedCognitiveSearchResults.Count}");
+
+                //return filteredAndSortedCognitiveSearchResults;
+
                 return cognitiveSearchResults;
+
             }
             catch (Exception ex)
             {
@@ -444,7 +469,7 @@ namespace openaidemo_webapp.Server.Helpers
                 // Perform the vector similarity search  
                 var searchOptions = new SearchOptions
                 {
-                    Vectors = { new() { Value = queryEmbeddings.ToArray(), KNearestNeighborsCount = 6, Fields = { "contentVector" } } },
+                    VectorQueries = { new RawVectorQuery() { Vector = queryEmbeddings.ToArray(), KNearestNeighborsCount = 6, Fields = { "contentVector" } } },
                     Size = k,
                     QueryType = SearchQueryType.Semantic,
                     QueryLanguage = QueryLanguage.EnUs,
@@ -504,7 +529,17 @@ namespace openaidemo_webapp.Server.Helpers
 
                 System.Diagnostics.Debug.Print($"Total Results: {count}");
 
+                // Filter and sort the sources by Score property in descending order  
+                List<CognitiveSearchResult> filteredAndSortedCognitiveSearchResults = cognitiveSearchResults
+                    .Where(source => Convert.ToDouble(source.Score) > 0.30)
+                    .OrderByDescending(source => source.Score).ToList();
+
+                System.Diagnostics.Debug.Print($"Filtered Results: {filteredAndSortedCognitiveSearchResults.Count}");
+
+                //return filteredAndSortedCognitiveSearchResults;
+
                 return cognitiveSearchResults;
+
             }
             catch (Exception ex)
             {
