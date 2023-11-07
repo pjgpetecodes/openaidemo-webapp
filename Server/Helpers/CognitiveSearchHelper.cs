@@ -18,6 +18,8 @@ namespace openaidemo_webapp.Server.Helpers
     {
         private readonly IConfiguration _config;
         private const int ModelDimensions = 1536;
+        private const string vectorSearchProfileName = "my-vector-profile";
+        private const string vectorSearchConfigName = "my-vector-config";
         private const string SemanticSearchConfigName = "my-semantic-config";
 
         private string cognitiveSearchKey;
@@ -120,10 +122,6 @@ namespace openaidemo_webapp.Server.Helpers
         //
         internal static SearchIndex GetIndex(string name)
         {
-            // Define the name of the vector search configuration.  
-            string vectorSearchProfileName = "my-vector-profile";
-            string vectorSearchConfigName = "my-vector-config";
-
             // Create a new SearchIndex object with the specified name.  
             SearchIndex searchIndex = new SearchIndex(name)
             {
