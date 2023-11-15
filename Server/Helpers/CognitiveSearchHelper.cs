@@ -81,7 +81,7 @@ namespace openaidemo_webapp.Server.Helpers
             {
                 
                 // Create the search index  
-                indexClient.CreateOrUpdateIndex(GetIndex(indexName));
+                indexClient.CreateOrUpdateIndex(ComposeIndex(indexName));
 
                 // Create the Vectors for the paragraphs
                 var indexDocuments = await ProcessExtractionsAsync(openAIClient, extractionResult.ExtractedParagraphs, extractionResult.FileName, extractionResult.Company, extractionResult.Year, signalRClient);
@@ -120,7 +120,7 @@ namespace openaidemo_webapp.Server.Helpers
         //
         // Get a SearchIndex object with the specified name.  
         //
-        internal static SearchIndex GetIndex(string name)
+        internal static SearchIndex ComposeIndex(string name)
         {
             // Create a new SearchIndex object with the specified name.  
             SearchIndex searchIndex = new SearchIndex(name)
