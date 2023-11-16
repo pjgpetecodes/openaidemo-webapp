@@ -38,7 +38,7 @@ namespace openaidemo_webapp.Server.Helpers
             string endpoint = $"https://{instanceName}.openai.azure.com/";
             string deploymentName = _config["OpenAI:DeploymentName"] ?? string.Empty;
 
-            // Generating a GUID for this message and send a temporary holoding message
+            // Generating a GUID for this message and send a temporary holding message
             String responseGuid = System.Guid.NewGuid().ToString();
             await signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", "...", true);
 
@@ -55,7 +55,7 @@ namespace openaidemo_webapp.Server.Helpers
                     new ChatMessage(ChatRole.System, "You are a helpful assistant"),
                     new ChatMessage(ChatRole.User, prompt),
                 },
-                Temperature = (float)0,
+                Temperature = (float)7,
                 MaxTokens = 800,
                 NucleusSamplingFactor = (float)0.95,
                 FrequencyPenalty = 0,

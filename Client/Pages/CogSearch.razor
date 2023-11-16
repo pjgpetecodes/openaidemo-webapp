@@ -1,4 +1,4 @@
-﻿@page "/cogsearch"
+﻿@page "/aisearch"
 @using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.AspNetCore.Components.Forms
 @using openaidemo_webapp.Client.Components.ChatBubble
@@ -14,7 +14,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 
-<PageTitle>Azure Cognitive Search</PageTitle>
+<PageTitle>Azure AI Search</PageTitle>
 
 <div class="options-container row container">
     <MudSelect T="string" Label="Search Type" @bind-Value="SelectedSearchType" Class="cog-search-options">
