@@ -299,7 +299,7 @@ namespace openaidemo_webapp.Server.Helpers
                 var searchOptions = new SearchOptions
                 {
                    
-                    VectorQueries = { new RawVectorQuery() { Vector = queryEmbeddings.ToArray(), KNearestNeighborsCount = 6, Fields = { "contentVector" } } },
+                    VectorQueries = { new RawVectorQuery() { Vector = queryEmbeddings.ToArray(), KNearestNeighborsCount = k, Fields = { "contentVector" } } },
                     Size = k,
                     Select = { "title", "content", "company", "location", "fileName", "year" },
                 };
@@ -383,7 +383,7 @@ namespace openaidemo_webapp.Server.Helpers
                 // Perform the vector similarity search  
                 var searchOptions = new SearchOptions
                 {
-                    VectorQueries = { new RawVectorQuery() { Vector = queryEmbeddings.ToArray(), KNearestNeighborsCount = 6, Fields = { "contentVector" } } },
+                    VectorQueries = { new RawVectorQuery() { Vector = queryEmbeddings.ToArray(), KNearestNeighborsCount = k, Fields = { "contentVector" } } },
                     Size = k,
                     Select = { "title", "content", "company", "location", "fileName", "year" },
                 };
@@ -467,10 +467,9 @@ namespace openaidemo_webapp.Server.Helpers
                 // Perform the vector similarity search  
                 var searchOptions = new SearchOptions
                 {
-                    VectorQueries = { new RawVectorQuery() { Vector = queryEmbeddings.ToArray(), KNearestNeighborsCount = 6, Fields = { "contentVector" } } },
+                    VectorQueries = { new RawVectorQuery() { Vector = queryEmbeddings.ToArray(), KNearestNeighborsCount = k, Fields = { "contentVector" } } },
                     Size = k,
                     QueryType = SearchQueryType.Semantic,
-                    QueryLanguage = QueryLanguage.EnUs,
                     SemanticConfigurationName = SemanticSearchConfigName,
                     QueryCaption = QueryCaptionType.Extractive,
                     QueryAnswer = QueryAnswerType.Extractive,
