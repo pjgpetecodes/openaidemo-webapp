@@ -55,7 +55,7 @@ namespace openaidemo_webapp.Server.Helpers
                     new ChatMessage(ChatRole.System, "You are a helpful assistant"),
                     new ChatMessage(ChatRole.User, prompt),
                 },
-                Temperature = (float)7,
+                Temperature = (float)0.7,
                 MaxTokens = 800,
                 NucleusSamplingFactor = (float)0.95,
                 FrequencyPenalty = 0,
