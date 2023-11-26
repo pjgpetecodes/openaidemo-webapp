@@ -101,7 +101,7 @@
 
                 chatInput.Query = string.Empty;
             }
-            
+
             StateHasChanged();
         });
 
@@ -120,14 +120,16 @@
 
     private async Task SendQuery()
     {
+
+        String prompt_prexix = "";
+
         if (!string.IsNullOrWhiteSpace(chatInput.Query))
         {
 
             if (chatInput.Query.ToLower().Contains("clippy") && clippyMode == false)
             {
                 clippyMode = true;
-                await JS.InvokeVoidAsync("showClippy", "Clippy");
-                Thread.Sleep(1500);
+                await JS.InvokeVoidAsync("showClippy", "Clippy");                
             }
 
             String chatMessageGuid = System.Guid.NewGuid().ToString();
@@ -135,9 +137,14 @@
             chatMessages.Add(new OpenAIChatMessage {ChatBubbleId = chatMessageGuid,  Content = chatInput.Query, Type = "human" });
             await JS.InvokeVoidAsync("scrollToBottom", "messages");
 
+            if (clippyMode == true)
+            {
+                prompt_prexix = "Pretend to be Clippy the Office helper and answer the following query: ";
+            }
+
             if (hubConnection != null)
             {
-                await hubConnection.SendAsync("SendQuery", chatInput.Query, chatMessages);
+                await hubConnection.SendAsync("SendQuery", prompt_prexix + chatInput.Query, chatMessages);
             }
 
         }

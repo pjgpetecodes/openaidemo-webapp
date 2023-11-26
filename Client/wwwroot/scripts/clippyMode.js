@@ -12,10 +12,7 @@ window.showClippy = (character) => {
 
         // do anything with the loaded agent
         displayedAgent.show();
-        setTimeout(function () {
-            displayedAgent.speak('Hi, I can help with that!');
-        }, 1500);
-
+        
     });
 };
 
