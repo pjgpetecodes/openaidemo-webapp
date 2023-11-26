@@ -15,7 +15,7 @@ namespace openaidemo_webapp.Server.Helpers
     public class OpenAIHelper
     {
         private readonly IConfiguration _config;
-        private ISingleClientProxy signalrClient;
+        private ISingleClientProxy _signalrClient;
         private ConcurrentQueue<OpenAIChatMessage> messageQueue = new ConcurrentQueue<OpenAIChatMessage>();
         private Timer messageTimer;
 
@@ -31,7 +31,7 @@ namespace openaidemo_webapp.Server.Helpers
         //
         public async Task<String> QueryOpenAIWithPrompts(String prompt, List<OpenAIChatMessage> previousMessages, ISingleClientProxy signalrClient)
         {
-            this.signalrClient = signalrClient;
+            this._signalrClient = signalrClient;
 
             string key = _config["OpenAI:Key"] ?? string.Empty;
             string instanceName = _config["OpenAI:InstanceName"] ?? string.Empty;
@@ -40,7 +40,7 @@ namespace openaidemo_webapp.Server.Helpers
 
             // Generating a GUID for this message and send a temporary holding message
             String responseGuid = System.Guid.NewGuid().ToString();
-            await signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", "...", true);
+            await this._signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", "...", true);
 
             // Create a new Azure OpenAI Client
             var client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(key));
@@ -122,7 +122,7 @@ namespace openaidemo_webapp.Server.Helpers
                 }
             }
 
-            await signalrClient.SendAsync("ReceiveMessage", responseGuid, "ai", completion);
+            await this._signalrClient.SendAsync("ReceiveMessage", responseGuid, "ai", completion);
 
             return completion;
         }
@@ -132,7 +132,7 @@ namespace openaidemo_webapp.Server.Helpers
         //
         public async Task<String> QueryOpenAIWithPromptAndSources(String prompt, List<CognitiveSearchResult> cognitiveSearchResults, List<OpenAIChatMessage> previousMessages, ISingleClientProxy signalrClient)
         {
-            this.signalrClient = signalrClient;
+            this._signalrClient = signalrClient;
 
             string key = _config["OpenAI:Key"] ?? string.Empty;
             string instanceName = _config["OpenAI:InstanceName"] ?? string.Empty;
@@ -250,21 +250,21 @@ namespace openaidemo_webapp.Server.Helpers
                 }
             }
 
-            await signalrClient.SendAsync("ReceiveMessage", responseGuid, "ai", completion);
+            await this._signalrClient.SendAsync("ReceiveMessage", responseGuid, "ai", completion);
 
             return completion;
         }
 
         private async void ProcessQueue(object state)
         {
-            if (this.signalrClient == null)
+            if (this._signalrClient == null)
             {
                 return;
             }
 
             if (messageQueue.TryDequeue(out OpenAIChatMessage messageInfo))
             {
-                await this.signalrClient.SendAsync("ReceiveMessageToken", messageInfo.ChatBubbleId, messageInfo.Type, messageInfo.Content, messageInfo.IsTemporaryResponse);
+                await this._signalrClient.SendAsync("ReceiveMessageToken", messageInfo.ChatBubbleId, messageInfo.Type, messageInfo.Content, messageInfo.IsTemporaryResponse);
             }
         }
     }

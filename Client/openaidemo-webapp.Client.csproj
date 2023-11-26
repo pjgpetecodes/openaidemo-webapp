@@ -18,5 +18,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Shared\openaidemo-webapp.Shared.csproj" />
   </ItemGroup>
-
+  
 </Project>
