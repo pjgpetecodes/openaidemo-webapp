@@ -57,7 +57,7 @@
         .WithAutomaticReconnect()
         .Build();
 
-        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        hubConnection.On<string, string, string>("ReceiveMessage", (responseGuid, user, message) =>
         {
             /*
             var encodedMsg = $"{user}: {message}";
