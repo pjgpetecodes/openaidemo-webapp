@@ -49,6 +49,7 @@ namespace openaidemo_webapp.Server.Helpers
             // Prepare the Completions Options
             var chatCompletionsOptions = new ChatCompletionsOptions()
             {
+                DeploymentName = deploymentName,
                 Messages =
                 {
                     //new ChatMessage(ChatRole.System, "You are a helpful assistant. You will talk like a pirate."),
@@ -85,41 +86,19 @@ namespace openaidemo_webapp.Server.Helpers
             // Add the prompt message last  
             chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, prompt));
 
+            var completion = "";
+            
             //
             // Get the Completions from OpenAI
             //
-            Response<StreamingChatCompletions> response = await client.GetChatCompletionsStreamingAsync(
-                deploymentOrModelName: deploymentName,
-                chatCompletionsOptions);
-            using StreamingChatCompletions streamingChatCompletions = response.Value;
-
-            var completion = "";
-
-            //
-            // Loop through each of the completion options that OpenAI has returned
-            //
-            await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming())
+            await foreach (StreamingChatCompletionsUpdate chatUpdate in client.GetChatCompletionsStreaming(chatCompletionsOptions))
             {
-                //
-                // Get each streaming token and add it to the queue to send to the connected SignalR Client
-                //
-                await foreach (ChatMessage message in choice.GetMessageStreaming())
+                if (!string.IsNullOrEmpty(chatUpdate.ContentUpdate))
                 {
-                    try
-                    {
-                        if (message.Content != null)
-                        {
-                            completion += message.Content.ToString();
-                            messageQueue.Enqueue(new OpenAIChatMessage { ChatBubbleId = responseGuid, Type = "AI", Content = message.Content.ToString(), IsTemporaryResponse = false });
-                            System.Diagnostics.Debug.Print(message.Content);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.Print($"Error querying OpenAI: {ex}");
-                        return null;
-                    }
-                }
+                    completion += chatUpdate.ContentUpdate.ToString();
+                    messageQueue.Enqueue(new OpenAIChatMessage { ChatBubbleId = responseGuid, Type = "AI", Content = chatUpdate.ContentUpdate.ToString(), IsTemporaryResponse = false });
+                    System.Diagnostics.Debug.Print(chatUpdate.ContentUpdate);
+                }                
             }
 
             await this._signalrClient.SendAsync("ReceiveMessage", responseGuid, "ai", completion);
@@ -182,6 +161,7 @@ namespace openaidemo_webapp.Server.Helpers
             // Prepare the Completions Options
             var chatCompletionsOptions = new ChatCompletionsOptions()
             {
+                DeploymentName = deploymentName,
                 Messages =
                 {
                     //new ChatMessage(ChatRole.System, "You are a helpful assistant. You will talk like a pirate."),
@@ -222,31 +202,18 @@ namespace openaidemo_webapp.Server.Helpers
             // Add the prompt message last  
             chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, prompt));
 
-            // Begin the Query
-            Response<StreamingChatCompletions> response = await client.GetChatCompletionsStreamingAsync(
-                deploymentOrModelName: deploymentName,
-                chatCompletionsOptions);
-            using StreamingChatCompletions streamingChatCompletions = response.Value;
-
             var completion = "";
 
-            await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming())
+            //
+            // Get the Completions from OpenAI
+            //
+            await foreach (StreamingChatCompletionsUpdate chatUpdate in client.GetChatCompletionsStreaming(chatCompletionsOptions))
             {
-                await foreach (ChatMessage message in choice.GetMessageStreaming())
+                if (!string.IsNullOrEmpty(chatUpdate.ContentUpdate))
                 {
-                    try
-                    {
-                        if (message.Content != null)
-                        {
-                            completion += message.Content.ToString();
-                            messageQueue.Enqueue(new OpenAIChatMessage { ChatBubbleId = responseGuid, Type = "AI", Content = message.Content.ToString(), IsTemporaryResponse = false });
-                            System.Diagnostics.Debug.Print(message.Content);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        // ...  
-                    }
+                    completion += chatUpdate.ContentUpdate.ToString();
+                    messageQueue.Enqueue(new OpenAIChatMessage { ChatBubbleId = responseGuid, Type = "AI", Content = chatUpdate.ContentUpdate.ToString(), IsTemporaryResponse = false });
+                    System.Diagnostics.Debug.Print(chatUpdate.ContentUpdate);
                 }
             }
 

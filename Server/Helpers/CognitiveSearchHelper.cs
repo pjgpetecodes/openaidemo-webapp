@@ -277,11 +277,15 @@ namespace openaidemo_webapp.Server.Helpers
         //
         // Generate OpenAI Embeddings for the given text
         //
-        private async Task<IReadOnlyList<float>> GenerateEmbeddings(string text, OpenAIClient openAIClient)
+        private async Task<ReadOnlyMemory<float>> GenerateEmbeddings(string text, OpenAIClient openAIClient)
         {
-            var embeddingModelDeploymentName = _config["OpenAI:EmbedDeploymentName"];
+            EmbeddingsOptions embeddingsOptions = new EmbeddingsOptions()
+            {
+                DeploymentName = _config["OpenAI:EmbedDeploymentName"],
+                Input = { text }
+            };
 
-            var response = await openAIClient.GetEmbeddingsAsync(embeddingModelDeploymentName, new EmbeddingsOptions(text));
+            var response = await openAIClient.GetEmbeddingsAsync(embeddingsOptions);
             return response.Value.Data[0].Embedding;
         }
 
