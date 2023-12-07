@@ -15,7 +15,7 @@ namespace openaidemo_webapp.Server.Helpers
     public class OpenAIHelper
     {
         private readonly IConfiguration _config;
-        private ISingleClientProxy signalrClient;
+        private ISingleClientProxy _signalrClient;
         private ConcurrentQueue<OpenAIChatMessage> messageQueue = new ConcurrentQueue<OpenAIChatMessage>();
         private Timer messageTimer;
 
@@ -31,7 +31,7 @@ namespace openaidemo_webapp.Server.Helpers
         //
         public async Task<String> QueryOpenAIWithPrompts(String prompt, List<OpenAIChatMessage> previousMessages, ISingleClientProxy signalrClient)
         {
-            this.signalrClient = signalrClient;
+            this._signalrClient = signalrClient;
 
             string key = _config["OpenAI:Key"] ?? string.Empty;
             string instanceName = _config["OpenAI:InstanceName"] ?? string.Empty;
@@ -40,7 +40,7 @@ namespace openaidemo_webapp.Server.Helpers
 
             // Generating a GUID for this message and send a temporary holding message
             String responseGuid = System.Guid.NewGuid().ToString();
-            await signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", "...", true);
+            await this._signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", "...", true);
 
             // Create a new Azure OpenAI Client
             var client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(key));
@@ -49,6 +49,7 @@ namespace openaidemo_webapp.Server.Helpers
             // Prepare the Completions Options
             var chatCompletionsOptions = new ChatCompletionsOptions()
             {
+                DeploymentName = deploymentName,
                 Messages =
                 {
                     //new ChatMessage(ChatRole.System, "You are a helpful assistant. You will talk like a pirate."),
@@ -85,44 +86,22 @@ namespace openaidemo_webapp.Server.Helpers
             // Add the prompt message last  
             chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, prompt));
 
+            var completion = "";
+            
             //
             // Get the Completions from OpenAI
             //
-            Response<StreamingChatCompletions> response = await client.GetChatCompletionsStreamingAsync(
-                deploymentOrModelName: deploymentName,
-                chatCompletionsOptions);
-            using StreamingChatCompletions streamingChatCompletions = response.Value;
-
-            var completion = "";
-
-            //
-            // Loop through each of the completion options that OpenAI has returned
-            //
-            await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming())
+            await foreach (StreamingChatCompletionsUpdate chatUpdate in client.GetChatCompletionsStreaming(chatCompletionsOptions))
             {
-                //
-                // Get each streaming token and add it to the queue to send to the connected SignalR Client
-                //
-                await foreach (ChatMessage message in choice.GetMessageStreaming())
+                if (!string.IsNullOrEmpty(chatUpdate.ContentUpdate))
                 {
-                    try
-                    {
-                        if (message.Content != null)
-                        {
-                            completion += message.Content.ToString();
-                            messageQueue.Enqueue(new OpenAIChatMessage { ChatBubbleId = responseGuid, Type = "AI", Content = message.Content.ToString(), IsTemporaryResponse = false });
-                            System.Diagnostics.Debug.Print(message.Content);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.Print($"Error querying OpenAI: {ex}");
-                        return null;
-                    }
-                }
+                    completion += chatUpdate.ContentUpdate.ToString();
+                    messageQueue.Enqueue(new OpenAIChatMessage { ChatBubbleId = responseGuid, Type = "AI", Content = chatUpdate.ContentUpdate.ToString(), IsTemporaryResponse = false });
+                    System.Diagnostics.Debug.Print(chatUpdate.ContentUpdate);
+                }                
             }
 
-            await signalrClient.SendAsync("ReceiveMessage", responseGuid, "ai", completion);
+            await this._signalrClient.SendAsync("ReceiveMessage", responseGuid, "ai", completion);
 
             return completion;
         }
@@ -132,7 +111,7 @@ namespace openaidemo_webapp.Server.Helpers
         //
         public async Task<String> QueryOpenAIWithPromptAndSources(String prompt, List<CognitiveSearchResult> cognitiveSearchResults, List<OpenAIChatMessage> previousMessages, ISingleClientProxy signalrClient)
         {
-            this.signalrClient = signalrClient;
+            this._signalrClient = signalrClient;
 
             string key = _config["OpenAI:Key"] ?? string.Empty;
             string instanceName = _config["OpenAI:InstanceName"] ?? string.Empty;
@@ -182,6 +161,7 @@ namespace openaidemo_webapp.Server.Helpers
             // Prepare the Completions Options
             var chatCompletionsOptions = new ChatCompletionsOptions()
             {
+                DeploymentName = deploymentName,
                 Messages =
                 {
                     //new ChatMessage(ChatRole.System, "You are a helpful assistant. You will talk like a pirate."),
@@ -222,49 +202,36 @@ namespace openaidemo_webapp.Server.Helpers
             // Add the prompt message last  
             chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, prompt));
 
-            // Begin the Query
-            Response<StreamingChatCompletions> response = await client.GetChatCompletionsStreamingAsync(
-                deploymentOrModelName: deploymentName,
-                chatCompletionsOptions);
-            using StreamingChatCompletions streamingChatCompletions = response.Value;
-
             var completion = "";
 
-            await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming())
+            //
+            // Get the Completions from OpenAI
+            //
+            await foreach (StreamingChatCompletionsUpdate chatUpdate in client.GetChatCompletionsStreaming(chatCompletionsOptions))
             {
-                await foreach (ChatMessage message in choice.GetMessageStreaming())
+                if (!string.IsNullOrEmpty(chatUpdate.ContentUpdate))
                 {
-                    try
-                    {
-                        if (message.Content != null)
-                        {
-                            completion += message.Content.ToString();
-                            messageQueue.Enqueue(new OpenAIChatMessage { ChatBubbleId = responseGuid, Type = "AI", Content = message.Content.ToString(), IsTemporaryResponse = false });
-                            System.Diagnostics.Debug.Print(message.Content);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        // ...  
-                    }
+                    completion += chatUpdate.ContentUpdate.ToString();
+                    messageQueue.Enqueue(new OpenAIChatMessage { ChatBubbleId = responseGuid, Type = "AI", Content = chatUpdate.ContentUpdate.ToString(), IsTemporaryResponse = false });
+                    System.Diagnostics.Debug.Print(chatUpdate.ContentUpdate);
                 }
             }
 
-            await signalrClient.SendAsync("ReceiveMessage", responseGuid, "ai", completion);
+            await this._signalrClient.SendAsync("ReceiveMessage", responseGuid, "ai", completion);
 
             return completion;
         }
 
         private async void ProcessQueue(object state)
         {
-            if (this.signalrClient == null)
+            if (this._signalrClient == null)
             {
                 return;
             }
 
             if (messageQueue.TryDequeue(out OpenAIChatMessage messageInfo))
             {
-                await this.signalrClient.SendAsync("ReceiveMessageToken", messageInfo.ChatBubbleId, messageInfo.Type, messageInfo.Content, messageInfo.IsTemporaryResponse);
+                await this._signalrClient.SendAsync("ReceiveMessageToken", messageInfo.ChatBubbleId, messageInfo.Type, messageInfo.Content, messageInfo.IsTemporaryResponse);
             }
         }
     }

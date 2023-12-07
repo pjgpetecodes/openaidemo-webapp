@@ -49,6 +49,7 @@
     private ChatInput chatInput = new ChatInput() { Query = ""};
     private List<OpenAIChatMessage> chatMessages = new List<OpenAIChatMessage>();
     private ElementReference messagesDiv;
+    private Boolean clippyMode = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,8 +58,14 @@
         .WithAutomaticReconnect()
         .Build();
 
-        hubConnection.On<string, string, string>("ReceiveMessage", (responseGuid, user, message) =>
+        hubConnection.On<string, string, string>("ReceiveMessage", async (responseGuid, user, message) =>
         {
+            if (clippyMode == true)
+            {
+                await JS.InvokeVoidAsync("clippySpeak", message);
+                chatInput.Query = string.Empty;
+            }
+
             /*
             var encodedMsg = $"{user}: {message}";
             chatMessages.Add(new ChatBubbleMessage { ChatBubbleId =  new Guid().ToString(), Content = message, Type = "ai" });
@@ -70,27 +77,31 @@
 
         hubConnection.On < string, string, string, bool> ("ReceiveMessageToken", async (chatBubbleId, user, messageToken, isTemporaryResponse) =>
         {
-            // Find the chat message with the supplied chatBubbleId
-            var chatMessage = chatMessages.Where(chatMessageItem => chatMessageItem.ChatBubbleId == chatBubbleId).FirstOrDefault();
-
-            if (chatMessage != null)
+            if (clippyMode == false)
             {
-                if (chatMessage.IsTemporaryResponse)
+                // Find the chat message with the supplied chatBubbleId
+                var chatMessage = chatMessages.Where(chatMessageItem => chatMessageItem.ChatBubbleId == chatBubbleId).FirstOrDefault();
+
+                if (chatMessage != null)
                 {
-                    chatMessage.Content = "";
-                    chatMessage.IsTemporaryResponse = false;
+                    if (chatMessage.IsTemporaryResponse)
+                    {
+                        chatMessage.Content = "";
+                        chatMessage.IsTemporaryResponse = false;
+                    }
+
+                    chatMessage.Content = chatMessage.Content + messageToken;
+                }
+                else
+                {
+                    chatMessages.Add(new OpenAIChatMessage { ChatBubbleId = chatBubbleId, Content = messageToken, Type = "ai", IsTemporaryResponse = isTemporaryResponse });
                 }
 
-                chatMessage.Content = chatMessage.Content + messageToken;
-            }
-            else
-            {
-                chatMessages.Add(new OpenAIChatMessage { ChatBubbleId = chatBubbleId, Content = messageToken, Type = "ai", IsTemporaryResponse = isTemporaryResponse });
+                await JS.InvokeVoidAsync("scrollToBottom", "messages");
+
+                chatInput.Query = string.Empty;
             }
 
-            await JS.InvokeVoidAsync("scrollToBottom", "messages");
-
-            chatInput.Query = string.Empty;
             StateHasChanged();
         });
 
@@ -109,16 +120,31 @@
 
     private async Task SendQuery()
     {
+
+        String prompt_prexix = "";
+
         if (!string.IsNullOrWhiteSpace(chatInput.Query))
         {
+
+            if (chatInput.Query.ToLower().Contains("clippy") && clippyMode == false)
+            {
+                clippyMode = true;
+                await JS.InvokeVoidAsync("showClippy", "Clippy");                
+            }
+
             String chatMessageGuid = System.Guid.NewGuid().ToString();
 
             chatMessages.Add(new OpenAIChatMessage {ChatBubbleId = chatMessageGuid,  Content = chatInput.Query, Type = "human" });
             await JS.InvokeVoidAsync("scrollToBottom", "messages");
 
+            if (clippyMode == true)
+            {
+                prompt_prexix = "Pretend to be Clippy the Office helper and answer the following query: ";
+            }
+
             if (hubConnection != null)
             {
-                await hubConnection.SendAsync("SendQuery", chatInput.Query, chatMessages);
+                await hubConnection.SendAsync("SendQuery", prompt_prexix + chatInput.Query, chatMessages);
             }
 
         }
