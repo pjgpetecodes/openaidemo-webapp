@@ -52,9 +52,9 @@ namespace openaidemo_webapp.Server.Helpers
                 DeploymentName = deploymentName,
                 Messages =
                 {
-                    //new ChatMessage(ChatRole.System, "You are a helpful assistant. You will talk like a pirate."),
-                    new ChatMessage(ChatRole.System, "You are a helpful assistant"),
-                    new ChatMessage(ChatRole.User, prompt),
+                    //new ChatRequestSystemMessage("You are a helpful assistant. You will talk like a pirate."),
+                    new ChatRequestSystemMessage("You are a helpful assistant"),
+                    new ChatRequestUserMessage(prompt),
                 },
                 Temperature = (float)0.7,
                 MaxTokens = 800,
@@ -69,22 +69,18 @@ namespace openaidemo_webapp.Server.Helpers
 
             foreach (var previousMessage in previousMessages.Skip(messagesToSkip))
             {
-                ChatRole chatRole = ChatRole.User;
-
                 if (previousMessage.Type == "ai")
                 {
-                    chatRole = ChatRole.Assistant;
+                    chatCompletionsOptions.Messages.Add(new ChatRequestAssistantMessage(previousMessage.Content));
                 }
                 else if (previousMessage.Type == "human")
                 {
-                    chatRole = ChatRole.User;
+                    chatCompletionsOptions.Messages.Add(new ChatRequestUserMessage(previousMessage.Content));
                 }
-
-                chatCompletionsOptions.Messages.Add(new ChatMessage(chatRole, previousMessage.Content));
             }
 
             // Add the prompt message last  
-            chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, prompt));
+            chatCompletionsOptions.Messages.Add(new ChatRequestUserMessage(prompt));
 
             var completion = "";
             
@@ -164,9 +160,9 @@ namespace openaidemo_webapp.Server.Helpers
                 DeploymentName = deploymentName,
                 Messages =
                 {
-                    //new ChatMessage(ChatRole.System, "You are a helpful assistant. You will talk like a pirate."),
-                    new ChatMessage(ChatRole.System, initPrompt + sourcesPrompt),
-                    new ChatMessage(ChatRole.User, prompt),
+                    //new ChatRequestSystemMessage("You are a helpful assistant. You will talk like a pirate."),
+                    new ChatRequestSystemMessage(initPrompt + sourcesPrompt),
+                    new ChatRequestUserMessage(prompt),
                 },
                 Temperature = (float)0,
                 MaxTokens = 800,
@@ -184,23 +180,19 @@ namespace openaidemo_webapp.Server.Helpers
 
                 foreach (var previousMessage in previousMessages.Skip(messagesToSkip))
                 {
-                    ChatRole chatRole = ChatRole.User;
-
                     if (previousMessage.Type == "ai")
                     {
-                        chatRole = ChatRole.Assistant;
+                        chatCompletionsOptions.Messages.Add(new ChatRequestAssistantMessage(previousMessage.Content));
                     }
                     else if (previousMessage.Type == "human")
                     {
-                        chatRole = ChatRole.User;
+                        chatCompletionsOptions.Messages.Add(new ChatRequestUserMessage(previousMessage.Content));
                     }
-
-                    chatCompletionsOptions.Messages.Add(new ChatMessage(chatRole, previousMessage.Content));
                 }
-            }            
+            }
 
             // Add the prompt message last  
-            chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, prompt));
+            chatCompletionsOptions.Messages.Add(new ChatRequestUserMessage(prompt));
 
             var completion = "";
 

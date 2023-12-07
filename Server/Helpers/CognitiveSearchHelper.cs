@@ -133,96 +133,81 @@ namespace openaidemo_webapp.Server.Helpers
                         new VectorSearchProfile(vectorSearchProfileName, vectorSearchConfigName)
                     },
                     Algorithms =
-                    {  
+                    {
                         // Use the HNSW vector search algorithm with the specified configuration name.  
-                        new HnswVectorSearchAlgorithmConfiguration(vectorSearchConfigName)
+                        new HnswAlgorithmConfiguration(vectorSearchConfigName)
                     }
                 },
                 // Configure the semantic search settings.  
-                SemanticSettings = new()
+                SemanticSearch = new()
                 {
                     Configurations =
                     {
                         new SemanticConfiguration(SemanticSearchConfigName, new()
-                        {  
-                            // Define the fields used in semantic search.  
-                            TitleField = new(){ FieldName = "title" },
+                        {
+                            TitleField = new SemanticField("title"),
                             ContentFields =
                             {
-                                new() { FieldName = "content" }
+                                new SemanticField("content")
                             },
-                            KeywordFields =
+                            KeywordsFields =
                             {
-                                new() { FieldName = "location" },
-                                new() { FieldName = "company" },
-                                new() { FieldName = "year" },
-                                new() { FieldName = "fileName"}
+                                new SemanticField("location"),
+                                new SemanticField("company"),
+                                new SemanticField("year"),
+                                new SemanticField("fileName"),
                             }
-
                         })
-                    },
+                    }
                 },
                 // Define the fields used in the search index.  
                 Fields =
                 {
-                    new SimpleField("id", SearchFieldDataType.String) 
-                    { 
-                        IsKey = true, 
-                        IsFilterable = true, 
-                        IsSortable = true, 
-                        IsFacetable = false 
+                    new SimpleField("id", SearchFieldDataType.String)
+                    {
+                        IsKey = true,
+                        IsFilterable = true,
+                        IsSortable = true,
+                        IsFacetable = false
                     },
-                    new SearchableField("title") 
-                    { 
-                        IsFilterable = true, 
-                        IsSortable = true 
+                    new SearchableField("title")
+                    {
+                        IsFilterable = true,
+                        IsSortable = true
                     },
-                    new SearchableField("content") 
+                    new SearchableField("content")
                     {
                         IsFilterable = true,
                         IsSortable = false,
                         IsFacetable = false
-                          
+
                     },
-                    new SearchableField("location") 
-                    { 
-                        IsFilterable = true, 
-                        IsSortable = true, 
-                        IsFacetable = false 
-                    },
-                    new SearchableField("company") 
-                    { 
-                        IsFilterable = true, 
-                        IsSortable = true, 
-                        IsFacetable = true 
-                    },
-                    new SearchableField("year") 
-                    { 
-                        IsFilterable = true, 
-                        IsSortable = true, 
-                        IsFacetable = true 
-                    },
-                    new SearchableField("fileName") 
-                    { 
-                        IsFilterable = true, 
-                        IsSortable = true, 
-                        IsFacetable = false 
-                    },  
-                    // Configure the vector search fields for title and content.  
-                    new SearchField("titleVector", SearchFieldDataType.Collection(SearchFieldDataType.Single))
+                    new SearchableField("location")
                     {
-                        IsSearchable = true,
-                        IsFacetable = false,
-                        VectorSearchDimensions = ModelDimensions,
-                        VectorSearchProfile = vectorSearchProfileName
+                        IsFilterable = true,
+                        IsSortable = true,
+                        IsFacetable = false
                     },
-                    new SearchField("contentVector", SearchFieldDataType.Collection(SearchFieldDataType.Single))
+                    new SearchableField("company")
                     {
-                        IsSearchable = true,
-                        IsFacetable = false,
-                        VectorSearchDimensions = ModelDimensions,
-                        VectorSearchProfile = vectorSearchProfileName
-                    }
+                        IsFilterable = true,
+                        IsSortable = true,
+                        IsFacetable = true
+                    },
+                    new SearchableField("year")
+                    {
+                        IsFilterable = true,
+                        IsSortable = true,
+                        IsFacetable = true
+                    },
+                    new SearchableField("fileName")
+                    {
+                        IsFilterable = true,
+                        IsSortable = true,
+                        IsFacetable = false
+                    },
+                    new VectorSearchField("titleVector", ModelDimensions, vectorSearchProfileName ),
+                    new VectorSearchField("contentVector", ModelDimensions, vectorSearchProfileName)
                 }
             };
 
@@ -302,10 +287,13 @@ namespace openaidemo_webapp.Server.Helpers
                 // Perform the vector similarity search  
                 var searchOptions = new SearchOptions
                 {
-                   
-                    VectorQueries = { new RawVectorQuery() { Vector = queryEmbeddings.ToArray(), KNearestNeighborsCount = k, Fields = { "contentVector" } } },
-                    Size = k,
+                    VectorSearch = new()
+                    {
+                        Queries = { new VectorizedQuery(queryEmbeddings.ToArray()) { KNearestNeighborsCount = k, Fields = { "contentVector" } } }
+                    },
+                    QueryType = SearchQueryType.Simple,
                     Select = { "title", "content", "company", "location", "fileName", "year" },
+                    Size = k,
                 };
 
                 // Add any filters passed in
@@ -387,9 +375,13 @@ namespace openaidemo_webapp.Server.Helpers
                 // Perform the vector similarity search  
                 var searchOptions = new SearchOptions
                 {
-                    VectorQueries = { new RawVectorQuery() { Vector = queryEmbeddings.ToArray(), KNearestNeighborsCount = k, Fields = { "contentVector" } } },
-                    Size = k,
+                    VectorSearch = new()
+                    {
+                        Queries = { new VectorizedQuery(queryEmbeddings.ToArray()) { KNearestNeighborsCount = k, Fields = { "contentVector" } } }
+                    },
+                    QueryType = SearchQueryType.Full,
                     Select = { "title", "content", "company", "location", "fileName", "year" },
+                    Size = k,
                 };
 
                 // Add any filters passed in
@@ -471,15 +463,20 @@ namespace openaidemo_webapp.Server.Helpers
                 // Perform the vector similarity search  
                 var searchOptions = new SearchOptions
                 {
-                    VectorQueries = { new RawVectorQuery() { Vector = queryEmbeddings.ToArray(), KNearestNeighborsCount = k, Fields = { "contentVector" } } },
-                    Size = k,
+                    VectorSearch = new()
+                    {
+                        Queries = { new VectorizedQuery(queryEmbeddings.ToArray()) { KNearestNeighborsCount = k, Fields = { "contentVector" } } }
+                    },
+                    SemanticSearch = new()
+                    {
+                        SemanticConfigurationName = SemanticSearchConfigName,
+                        QueryCaption = new(QueryCaptionType.Extractive),
+                        QueryAnswer = new(QueryAnswerType.Extractive),                        
+                    },
                     QueryType = SearchQueryType.Semantic,
-                    SemanticConfigurationName = SemanticSearchConfigName,
-                    QueryCaption = QueryCaptionType.Extractive,
-                    QueryAnswer = QueryAnswerType.Extractive,
-                    QueryCaptionHighlightEnabled = true,
                     Select = { "title", "content", "company", "location", "fileName", "year" },
-                };
+                    Size = k,
+                };                
 
                 // Add any filters passed in
                 if (company != "")
@@ -515,8 +512,17 @@ namespace openaidemo_webapp.Server.Helpers
                     cognitiveSearchResult.Content = result.Document["content"].ToString() ?? string.Empty;
                     cognitiveSearchResult.Company = result.Document["company"].ToString() ?? string.Empty;
                     cognitiveSearchResult.Year = result.Document["year"].ToString() ?? string.Empty;
-                    cognitiveSearchResult.captionHighlight = result.Captions.FirstOrDefault().Highlights ?? string.Empty;
-                    cognitiveSearchResult.captionText = result.Captions.FirstOrDefault().Text ?? string.Empty;
+
+                    var caption = result.SemanticSearch.Captions.FirstOrDefault();
+                    if (caption != null && caption.Highlights != null && caption.Highlights != "")
+                    {
+                        cognitiveSearchResult.captionHighlight = caption.Highlights;
+                    }
+
+                    if (caption != null && caption.Text != null && caption.Text != "")
+                    {
+                        cognitiveSearchResult.captionText = caption.Text;
+                    }
 
                     cognitiveSearchResults.Add(cognitiveSearchResult);
 
