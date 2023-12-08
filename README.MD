@@ -2,7 +2,7 @@
 
 ## Instructions
 
-Create a secrets.json file with the following content (In visual studio, right click on the Server project and click Manage User Secrets);
+Open the example secrets.json file in the `Server` folder and replace the relevant placeholders with the keys and values from your deployed services;
 
 {
   "OpenAI": {
@@ -18,6 +18,10 @@ Create a secrets.json file with the following content (In visual studio, right c
     "InstanceName": "<Cognitive Search Instance Name>"
   }
 }
+
+From the `Server` folder, run the following command to add the secrets to your secrets store;
+
+`type .\secrets.json | dotnet user-secrets set`
 
 ## File Upload Requirements
 
