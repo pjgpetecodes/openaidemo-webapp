@@ -20,12 +20,14 @@ else
         {
             var index = i;
             var locationParts = SourcesItems[index].Location.Split('-');
+            var newContent = this.getHighlightedContent(SourcesItems[index].Content, SourcesItems[index].captionText, SourcesItems[index].captionHighlight);
+
             <div class="@(expandedCards[index] ? "SourceCard expanded" : "SourceCard")"
             @onclick="@(() => ToggleCard(index))">
                 <h3>DOC @(index + 1)</h3>
                 <h4>@SourcesItems[index].FileName</h4>
                 <h5>Page @locationParts[0] - Paragraph @locationParts[1]</h5>
-                <div class="SourceCardText">@((MarkupString)SourcesItems[index].Content)</div>
+                <div class="SourceCardText">@((MarkupString)newContent)</div>
             </div>
         }
     </div>
@@ -46,5 +48,52 @@ else
     {
         expandedCards[index] = !expandedCards[index];
         StateHasChanged(); // Trigger a re-render to reflect the changes
+    }
+
+    private string getHighlightedContent(string content, string captionText, string captionHighlightText)
+    {
+        try
+        {
+            if (captionText == null || captionHighlightText == null)
+            {
+                return content;
+            }
+
+            int captionPdfIndex = captionText.IndexOf(".pdf. ");
+            int startOfCaptionText = captionPdfIndex + 6;
+            string newCaptionText = "";
+
+            if (captionPdfIndex >= 0)
+            {
+                newCaptionText = captionText.Substring(startOfCaptionText);
+            }
+            else
+            {
+                newCaptionText = captionText;
+            }
+
+            int highlightPdfIndex = captionHighlightText.IndexOf(".pdf.");
+            int startOfHighlightText = highlightPdfIndex + 4;
+            string newHighlightText = "";
+
+            if (highlightPdfIndex >= 0)
+            {
+                newHighlightText = captionHighlightText.Substring(startOfHighlightText);
+            }
+            else
+            {
+                newHighlightText = captionHighlightText;
+            }
+
+            string newContent = content.Replace("\n", " ").Replace(newCaptionText, newHighlightText);
+
+            return newContent;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            return "";
+        }        
+
     }
 }
