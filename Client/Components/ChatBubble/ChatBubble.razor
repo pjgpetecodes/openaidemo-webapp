@@ -47,18 +47,18 @@
                 @foreach (var source in GetDocSources())
                 {
                     var docNumber = Message.Sources.IndexOf(source) + 1;
+                    var docFileName = source.FileName;
                     var tooltipText = $"Source {docNumber} - {source.Id}";
 
-                    <MudTooltip ShowOnHover class="citation">
-                        <ChildContent class="citationHeader">
-                            <MudText>Doc @docNumber</MudText>
+                    <MudTooltip Color="Color.Primary" Arrow ShowOnHover class="citation">
+                        <ChildContent>
+                            <MudText Class="citation-header">Doc @docNumber - @docFileName</MudText>
                         </ChildContent>
-                        <TooltipContent class="citationContent">
-                            <MudText>@(source.Content.Length > 1000 ? source.Content.Substring(0, 1000) + "..." : source.Content)</MudText>
+                        <TooltipContent>
+                            <MudText Class="citation-content-header">Doc @docNumber - @docFileName</MudText>
+                            <MudText Class="citation-content">@(source.Content.Length > 1000 ? source.Content.Substring(0, 1000) + "..." : source.Content)</MudText>
                         </TooltipContent>
                     </MudTooltip>
-                    
-
                 }
             </div>
         }
