@@ -1,6 +1,8 @@
 ﻿@using System.Text.RegularExpressions;
 @using openaidemo_webapp.Shared
+@using MudBlazor
 @inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
 
 <div class="@chatBubbleStyle">
     @if (Message.IsTemporaryResponse)
@@ -33,7 +35,34 @@
             {
                 <span>@(new MarkupString(item.content))</span>
             }
+
+
         }
+
+       @if (Message.Sources != null && Message.Sources.Count > 0)
+        {
+            <div class="chatBubbleCitations">
+                <hr/>
+                <div class="chatBubbleCitationsHeader">Citations:</div>
+                @foreach (var source in GetDocSources())
+                {
+                    var docNumber = Message.Sources.IndexOf(source) + 1;
+                    var docFileName = source.FileName;
+                    var tooltipText = $"Source {docNumber} - {source.Id}";
+
+                    <MudTooltip Color="Color.Primary" Arrow ShowOnHover class="citation">
+                        <ChildContent>
+                            <MudText Class="citation-header">Doc @docNumber - @docFileName</MudText>
+                        </ChildContent>
+                        <TooltipContent>
+                            <MudText Class="citation-content-header">Doc @docNumber - @docFileName</MudText>
+                            <MudText Class="citation-content">@(source.Content.Length > 1000 ? source.Content.Substring(0, 1000) + "..." : source.Content)</MudText>
+                        </TooltipContent>
+                    </MudTooltip>
+                }
+            </div>
+        }
+
     }
 </div>
 
@@ -45,6 +74,30 @@
     private string typingStyle => "typing";
 
     private bool shouldRender = true;
+
+    // Get a filtered list of Message.Sources based on finding the word "DOC " and the source index
+    private List<CognitiveSearchResult> GetDocSources()
+    {
+
+        Console.WriteLine("GetDocSources");
+
+        List<CognitiveSearchResult> docSources = new List<CognitiveSearchResult>();
+
+        if (Message.Sources != null)
+        {
+            foreach (var source in Message.Sources)
+            {
+                if (Message.Content.Contains("DOC " + source.Id))
+                {
+                    docSources.Add(source);
+                }
+            }
+        }  
+        
+        Console.WriteLine("docSources.Count: " + docSources.Count);
+
+        return docSources;
+    }
 
     protected override bool ShouldRender()
     {

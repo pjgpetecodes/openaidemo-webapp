@@ -40,7 +40,7 @@ namespace openaidemo_webapp.Server.Helpers
 
             // Generating a GUID for this message and send a temporary holding message
             String responseGuid = System.Guid.NewGuid().ToString();
-            await this._signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", "...", true);
+            await this._signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", "...", true, null);
 
             // Create a new Azure OpenAI Client
             var client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(key));
@@ -116,7 +116,7 @@ namespace openaidemo_webapp.Server.Helpers
 
             // Generating a GUID for this message and send a temporary holding message
             String responseGuid = System.Guid.NewGuid().ToString();
-            await signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", "...", true);
+            await signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", "...", true, cognitiveSearchResults);
 
             // Create a new Azure OpenAI Client
             var client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(key));
@@ -125,6 +125,7 @@ namespace openaidemo_webapp.Server.Helpers
             
             var initPrompt = @"You are an AI Assistant by Pete Gallagher, you are an expert in supplied documents.
                               Your task is to help Pete Gallagher gain insights from the documents.
+                              You will be given a question and extracted parts of documents from a variety of sources
                               You will be given a question and extracted parts of documents from a variety of sources
                               Provide a clear and structured answer based on the context provided.
                               Return any tables and relevant content as html.
@@ -223,7 +224,7 @@ namespace openaidemo_webapp.Server.Helpers
 
             if (messageQueue.TryDequeue(out OpenAIChatMessage messageInfo))
             {
-                await this._signalrClient.SendAsync("ReceiveMessageToken", messageInfo.ChatBubbleId, messageInfo.Type, messageInfo.Content, messageInfo.IsTemporaryResponse);
+                await this._signalrClient.SendAsync("ReceiveMessageToken", messageInfo.ChatBubbleId, messageInfo.Type, messageInfo.Content, messageInfo.IsTemporaryResponse, null);
             }
         }
     }

@@ -84,4 +84,29 @@
 
 .codeSnippetContainer:hover .copyButton {
     opacity: 1;
-}  
+}
+
+.chatBubbleCitations {
+    display: flex;
+    margin-top: 10px;
+    flex-direction: column;
+}
+
+.chatBubbleCitationsHeader {
+    font-weight: bold;
+}
+
+.citation-header {
+    background-color: white;
+    border: 1px solid black;
+    padding: 5px;
+    margin: 5px !important;
+}
+
+.citation-content {
+    width: 300px;
+}
+
+.citation-content-header {
+    font-weight: bold !important;
+}

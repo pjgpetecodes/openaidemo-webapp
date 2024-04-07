@@ -165,7 +165,7 @@
         //
         // An OpenAI Message Token has been received
         //
-        hubConnection.On < string, string, string, bool> ("ReceiveMessageToken", async (chatBubbleId, user, messageToken, isTemporaryResponse) =>
+        hubConnection.On<string, string, string, bool, List<CognitiveSearchResult>>("ReceiveMessageToken", async (chatBubbleId, user, messageToken, isTemporaryResponse, sources) =>
         {
             // Find the chat message with the supplied chatBubbleId
             var chatMessage = chatMessages.Where(chatMessageItem => chatMessageItem.ChatBubbleId == chatBubbleId).FirstOrDefault();
@@ -182,7 +182,7 @@
             }
             else
             {
-                chatMessages.Add(new OpenAIChatMessage { ChatBubbleId = chatBubbleId, Content = messageToken, Type = "ai", IsTemporaryResponse = isTemporaryResponse });
+                chatMessages.Add(new OpenAIChatMessage { ChatBubbleId = chatBubbleId, Content = messageToken, Type = "ai", IsTemporaryResponse = isTemporaryResponse, Sources = sources });
             }
 
             await JS.InvokeVoidAsync("scrollToBottom", "messages");
