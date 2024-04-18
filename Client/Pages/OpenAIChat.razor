@@ -121,7 +121,7 @@
 
            if (hubConnection != null)
             {
-                await hubConnection.SendAsync("SendQuery", chatInput.Query, chatMessages, null);
+                await hubConnection.SendAsync("SendQuery", chatInput.Query, chatMessages);
             }
 
         }
