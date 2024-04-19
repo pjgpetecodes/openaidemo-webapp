@@ -4,25 +4,14 @@ namespace maui.Components;
 
 public partial class ChatBubble : ContentView
 {
-    public static readonly BindableProperty MessageProperty = BindableProperty.Create(
-        propertyName: "Message",
-        returnType: typeof(OpenAIChatMessage),
-        declaringType: typeof(ChatBubble),
-        defaultValue: null,
-        defaultBindingMode: BindingMode.TwoWay,
-        propertyChanged: MessagePropertyChanged);
+    public static readonly BindableProperty MessageProperty = BindableProperty.Create(nameof(Message), typeof(OpenAIChatMessage), typeof(ChatBubble), null);
+
 
     public OpenAIChatMessage Message
     {
-        get { return (OpenAIChatMessage)GetValue(MessageProperty); }
-        set { SetValue(MessageProperty, value); }
-    }
-
-    private static void MessagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
-    {
-        //var control = (ChatBubble)bindable;
-        //control.BindingContext = newValue; // Set the BindingContext of the Frame to the new Message
-    }
+        get => (OpenAIChatMessage)GetValue(ChatBubble.MessageProperty);
+        set => SetValue(ChatBubble.MessageProperty, value);
+    }    
 
     private string chatBubbleStyle => $"chatBubbleStyle {Message.Type}";
     private string typingStyle => "typing";
@@ -31,6 +20,6 @@ public partial class ChatBubble : ContentView
 
     public ChatBubble()
     {
-
+        InitializeComponent();
     }
 }

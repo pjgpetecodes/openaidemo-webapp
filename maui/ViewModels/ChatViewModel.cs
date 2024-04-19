@@ -26,7 +26,15 @@ namespace maui.ViewModels
             }
         }
 
-        public String ChatMessage { get; set; }
+        private String _chatMessage;
+        public String ChatMessage { 
+            get => _chatMessage;
+            set
+            {
+                _chatMessage = value;
+                OnPropertyChanged(nameof(ChatMessage));
+            }
+        }
 
         public String SelectedCompany { get; set; }
 
@@ -226,6 +234,8 @@ namespace maui.ViewModels
                     {
                         await hubConnection.SendAsync("SendCogSearchQuery", ChatMessage, includePreviousMessages ? previousMessages : new List<OpenAIChatMessage>(), SelectedCompany, SelectedYear);
                     }
+
+                    ChatMessage = "";
                 }
             }
             catch (Exception)
