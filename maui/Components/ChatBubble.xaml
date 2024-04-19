@@ -5,6 +5,12 @@
              x:Name="this">
 
     <StackLayout Orientation="Horizontal" BindingContext="{x:Reference this}">
-        <Label Text="{Binding Message.Content}" TextColor="Blue" />
+        <Frame BackgroundColor="LightGray" CornerRadius="10" HasShadow="True" HorizontalOptions="Start" x:Name="chatBubbleFrame">
+            <StackLayout>
+                <Label Text="{Binding Message.Content}" TextColor="Blue" />
+                
+            </StackLayout>
+        </Frame>
     </StackLayout>
+
 </ContentView>
