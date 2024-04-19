@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="maui.Components.ChatBubble"
@@ -6,9 +5,13 @@
 
     <StackLayout Orientation="Horizontal" BindingContext="{x:Reference this}">
         <Frame BackgroundColor="LightGray" CornerRadius="10" HasShadow="True" HorizontalOptions="Start" x:Name="chatBubbleFrame">
+            <Frame.Triggers>
+                <DataTrigger TargetType="Frame" Binding="{Binding Message.Type}" Value="ai">
+                    <Setter Property="HorizontalOptions" Value="End" />
+                </DataTrigger>
+            </Frame.Triggers>
             <StackLayout>
                 <Label Text="{Binding Message.Content}" TextColor="Blue" />
-                
             </StackLayout>
         </Frame>
     </StackLayout>

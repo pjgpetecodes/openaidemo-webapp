@@ -53,9 +53,7 @@ namespace maui.ViewModels
 
         public ChatViewModel()
         {
-            // Create some OpenAIChatMessages and add them to the ChatMessages list
-            ChatMessages.Add(new OpenAIChatMessage { ChatBubbleId = "1", Content = "Hello, how can I help you?", Type = "human" });
-            ChatMessages.Add(new OpenAIChatMessage { ChatBubbleId = "2", Content = "I am an AI", Type = "ai" });
+            
         }
 
         public async void SetupConnection()

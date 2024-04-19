@@ -20,6 +20,6 @@ public partial class ChatBubble : ContentView
 
     public ChatBubble()
     {
-        InitializeComponent();
+        
     }
 }

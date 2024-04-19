@@ -2,6 +2,7 @@
 using openaidemo_webapp.Shared;
 using System.Collections.ObjectModel;
 using maui.ViewModels;
+using maui.ValueConverters;
 
 namespace maui
 {
@@ -11,7 +12,11 @@ namespace maui
 
         public MainPage()
         {
-            InitializeComponent();
+            this.Resources["MessageTemplateSelector"] = new MessageTemplateSelector
+            {
+                UserMessageTemplate = (DataTemplate)this.Resources["UserMessageTemplate"],
+                AIMessageTemplate = (DataTemplate)this.Resources["AIMessageTemplate"]
+            };
 
             BindingContext = chatViewModel;
             chatViewModel.SetupConnection();
