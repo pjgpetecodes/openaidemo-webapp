@@ -7,56 +7,56 @@
     xmlns:converter="clr-namespace:maui.Converters"
     xmlns:local="clr-namespace:maui.ViewModels;assembly=maui"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
-    <ContentPage.Resources>
-        <converter:StringToBoolConverter x:Key="StringToBoolConverter" />
-        <converter:StringToColorConverter x:Key="StringToColorConmvter" />
-    </ContentPage.Resources>
-    <ScrollView>
-        <VerticalStackLayout Padding="30,0" Spacing="25">
+    
+    <Grid Padding="30,0" Margin="30" VerticalOptions="FillAndExpand">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-            <VerticalStackLayout>
-                <Label Text="Company:" />
-                <Picker
-                    x:Name="company"
-                    ItemsSource="{Binding Companies}"
-                    SelectedItem="{Binding SelectedCompany}" />
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Label Text="Company:" Grid.Row="0"/>
+            <Picker
+                x:Name="company"
+                ItemsSource="{Binding Companies}"
+                SelectedItem="{Binding SelectedCompany}" 
+                Grid.Row="1"/>
+        </Grid>        
 
-                <ListView ItemsSource="{Binding ChatMessages}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <ViewCell>
-                                <Grid
-                                    ColumnDefinitions="*,*"
-                                    HorizontalOptions="FillAndExpand"
-                                    RowDefinitions="60">
-                                    <BoxView
-                                        Grid.Column="{Binding Type, Converter={StaticResource StringToBoolConverter}}"
-                                        BackgroundColor="{Binding Type, Converter={StaticResource StringToColorConmvter}}"
-                                        CornerRadius="5" />
-                                    <Label
-                                        Grid.Column="{Binding Type, Converter={StaticResource StringToBoolConverter}}"
-                                        HorizontalTextAlignment="Center"
-                                        Text="{Binding Content}"
-                                        VerticalTextAlignment="Center" />
+        <ListView ItemsSource="{Binding ChatMessages}" 
+                  VerticalOptions="FillAndExpand"
+                  Grid.Row="1"
+                  Margin="0, 20"
+                  BackgroundColor="AliceBlue">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <components:ChatBubble Message="{Binding Content}" Margin="20" />
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
 
+        <!--  Add a text input for a chat message  -->
 
-                                    <!--<components:ChatBubble Grid.Column="{Binding Type, Converter={StaticResource StringToBoolConverter}}" Message="{Binding Content}" />-->
-                                </Grid>
-                            </ViewCell>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-
-                <!--  Add a text input for a chat message  -->
-                <Entry
-                    x:Name="chatInput"
-                    Placeholder="Chat Message"
-                    Text="{Binding ChatMessage}" />
-                <Button Clicked="SendTestMessage" Text="Send Test Message" />
-
-
-            </VerticalStackLayout>
-        </VerticalStackLayout>
-    </ScrollView>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="90" />
+            </Grid.ColumnDefinitions>
+            <Entry  
+                x:Name="chatInput"
+                Placeholder="Chat Message"
+                Text="{Binding ChatMessage}"
+                Grid.Column="0"/>
+            <Button Clicked="SendMessage" Text="Send" Grid.Column="1"/>
+        </Grid>
+        
+    </Grid>
 
 </ContentPage>

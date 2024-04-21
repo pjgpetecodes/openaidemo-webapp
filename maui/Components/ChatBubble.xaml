@@ -2,15 +2,27 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="maui.Components.ChatBubble"
+             xmlns:converter="clr-namespace:maui.Converters"
              x:Name="this">
+    <ContentView.Resources>
+        <converter:StringToBoolConverter x:Key="StringToBoolConverter" />
+        <converter:StringToColorConverter x:Key="StringToColorConmvter" />
+        <converter:StringToCornerRadiusConverter x:Key="StringToCornerRadiusConverter" />
+    </ContentView.Resources>
 
-    <StackLayout Orientation="Horizontal" BindingContext="{x:Reference this}">
-        <Frame BackgroundColor="LightGray" CornerRadius="10" HasShadow="True" HorizontalOptions="Start" x:Name="chatBubbleFrame">
-            <StackLayout>
-                <Label Text="{Binding Message.Content}" TextColor="Blue" />
-                
-            </StackLayout>
-        </Frame>
-    </StackLayout>
+    <Grid
+        ColumnDefinitions="*,*"
+        HorizontalOptions="FillAndExpand"
+        RowDefinitions="60">
+        <BoxView
+            Grid.Column="{Binding Type, Converter={StaticResource StringToBoolConverter}}"
+            BackgroundColor="{Binding Type, Converter={StaticResource StringToColorConmvter}}"
+            CornerRadius="{Binding Type, Converter={StaticResource StringToCornerRadiusConverter}}"/>
+        <Label
+            Grid.Column="{Binding Type, Converter={StaticResource StringToBoolConverter}}"
+            HorizontalTextAlignment="Start"
+            Text="{Binding Content}"
+            VerticalTextAlignment="Start" Margin="10" />
+    </Grid>
 
 </ContentView>

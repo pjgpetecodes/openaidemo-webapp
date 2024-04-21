@@ -17,7 +17,7 @@ namespace maui
             chatViewModel.SetupConnection();
         }
 
-        private async void SendTestMessage(object sender, EventArgs e)
+        private async void SendMessage(object sender, EventArgs e)
         {
             await chatViewModel.SendMessage();
         }
