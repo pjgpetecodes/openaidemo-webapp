@@ -42,7 +42,7 @@ namespace maui.ViewModels
         public ObservableCollection<String> Companies { get; set; } = new ObservableCollection<string>();
         public ObservableCollection<String> Years { get; set; } = new ObservableCollection<String>();
 
-        ObservableCollection<CognitiveSearchResult> cognitiveSearchResults = new ObservableCollection<CognitiveSearchResult>();
+        List<CognitiveSearchResult> cognitiveSearchResults = new List<CognitiveSearchResult>();
         ObservableCollection<CognitiveSearchFacet> cognitiveSearchFacetResults = new ObservableCollection<CognitiveSearchFacet>();
 
         private HubConnection? hubConnection;
@@ -50,12 +50,18 @@ namespace maui.ViewModels
         private bool isLoadingFilters = false;
         private bool includePreviousMessages = true;
         
-
+            
         public ChatViewModel()
         {
+
+            // Create some dummy CognitiveSearchResults
+            cognitiveSearchResults.Add(new CognitiveSearchResult { Title = "Title 1", Content = "Description 1", FileName="xyz-retail-2024-1"});
+            cognitiveSearchResults.Add(new CognitiveSearchResult { Title = "Title 2", Content = "Description 2", FileName = "xyz-retail-2024-2" });
+            cognitiveSearchResults.Add(new CognitiveSearchResult { Title = "Title 3", Content = "Description 3", FileName = "xyz-retail-2024-3" });
+
             // Create some OpenAIChatMessages and add them to the ChatMessages list
             ChatMessages.Add(new OpenAIChatMessage { ChatBubbleId = "1", Content = "Hello, how can I help you?", Type = "human" });
-            ChatMessages.Add(new OpenAIChatMessage { ChatBubbleId = "2", Content = "I am an AI", Type = "ai" });
+            ChatMessages.Add(new OpenAIChatMessage { ChatBubbleId = "2", Content = "I am an AI [DOC 1 - xyz-retail-2024-3", Type = "ai", Sources=cognitiveSearchResults });
         }
 
         public async void SetupConnection()
@@ -128,7 +134,7 @@ namespace maui.ViewModels
                     try
                     {
                         isLoadingSources = false;
-                        cognitiveSearchResults = new ObservableCollection<CognitiveSearchResult>(cogSearchResults.CognitiveSearchResultList);
+                        cognitiveSearchResults = new List<CognitiveSearchResult>(cogSearchResults.CognitiveSearchResultList);
                         //StateHasChanged();
                     }
                     catch (Exception)
@@ -216,7 +222,7 @@ namespace maui.ViewModels
             {
                 if (!string.IsNullOrWhiteSpace(ChatMessage))
                 {
-                    cognitiveSearchResults = new ObservableCollection<CognitiveSearchResult>();
+                    cognitiveSearchResults = new List<CognitiveSearchResult>();
                     isLoadingSources = true;
                     String chatMessageGuid = System.Guid.NewGuid().ToString();
 

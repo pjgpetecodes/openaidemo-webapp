@@ -3,12 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="maui.Components.ChatBubble"
              xmlns:converter="clr-namespace:maui.Converters"
-             x:Name="this">
+             x:Name="this"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
     <ContentView.Resources>
         <converter:StringToBoolConverter x:Key="StringToBoolConverter" />
         <converter:StringToColorConverter x:Key="StringToColorConmvter" />
         <converter:StringToCornerRadiusConverter x:Key="StringToCornerRadiusConverter" />
         <converter:StringToMarginConverter x:Key="StringToMarginConverter" />
+        <converter:NullToBoolConverter x:Key="NullToBoolConverter" />
     </ContentView.Resources>
 
     <Grid
@@ -25,7 +27,9 @@
             Grid.Column="{Binding Type, Converter={StaticResource StringToBoolConverter}}"
             HorizontalTextAlignment="Start"
             Text="{Binding Content}"
-            VerticalTextAlignment="Start" Margin="10" />
+            VerticalTextAlignment="Start" Margin="10">            
+        </Label>
+        
     </Grid>
 
 </ContentView>
