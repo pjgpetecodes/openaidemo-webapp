@@ -7,13 +7,14 @@ namespace maui.Converters
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             string type = value as string ?? string.Empty;
+            int cornerRadius = 15;
             if (type is "ai" || type is "AI")
             {
-                return new CornerRadius(10, 10, 0, 10);
+                return new CornerRadius(cornerRadius, cornerRadius, 0, cornerRadius);
             }
             else
             {
-                return new CornerRadius(10, 10, 10, 0);
+                return new CornerRadius(cornerRadius, cornerRadius, cornerRadius, 0);
             }
         }
 
