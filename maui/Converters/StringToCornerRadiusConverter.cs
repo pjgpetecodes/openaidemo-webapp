@@ -9,11 +9,11 @@ namespace maui.Converters
             string type = value as string ?? string.Empty;
             if (type is "ai" || type is "AI")
             {
-                return new CornerRadius(5, 5, 0, 5);
+                return new CornerRadius(10, 10, 0, 10);
             }
             else
             {
-                return new CornerRadius(5, 5, 5, 0);
+                return new CornerRadius(10, 10, 10, 0);
             }
         }
 
