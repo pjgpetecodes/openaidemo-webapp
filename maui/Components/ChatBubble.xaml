@@ -8,6 +8,7 @@
         <converter:StringToBoolConverter x:Key="StringToBoolConverter" />
         <converter:StringToColorConverter x:Key="StringToColorConmvter" />
         <converter:StringToCornerRadiusConverter x:Key="StringToCornerRadiusConverter" />
+        <converter:StringToMarginConverter x:Key="StringToMarginConverter" />
     </ContentView.Resources>
 
     <Grid
@@ -17,7 +18,9 @@
         <BoxView
             Grid.Column="{Binding Type, Converter={StaticResource StringToBoolConverter}}"
             BackgroundColor="{Binding Type, Converter={StaticResource StringToColorConmvter}}"
-            CornerRadius="{Binding Type, Converter={StaticResource StringToCornerRadiusConverter}}"/>
+            CornerRadius="{Binding Type, Converter={StaticResource StringToCornerRadiusConverter}}"
+            Margin="{Binding Type, Converter={StaticResource StringToCornerRadiusConverter}}">
+        </BoxView>
         <Label
             Grid.Column="{Binding Type, Converter={StaticResource StringToBoolConverter}}"
             HorizontalTextAlignment="Start"

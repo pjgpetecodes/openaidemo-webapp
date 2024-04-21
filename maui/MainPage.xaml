@@ -36,7 +36,15 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
-                        <components:ChatBubble Message="{Binding Content}" Margin="20" />
+                        <components:ChatBubble Message="{Binding Content}" 
+                                               Margin="20">
+                            <components:ChatBubble.Shadow>
+                                <Shadow Brush="Gray"
+                                        Offset="10,10"
+                                        Radius="20"
+                                        Opacity="0.8"/>
+                            </components:ChatBubble.Shadow>
+                        </components:ChatBubble>
                     </ViewCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
