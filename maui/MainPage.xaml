@@ -1,50 +1,58 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             xmlns:components="clr-namespace:maui.Components;assembly=maui"
-             xmlns:local="clr-namespace:maui.ViewModels;assembly=maui"
-             x:Class="maui.MainPage">
-
-    <ContentPage.BindingContext>
-        <local:ChatViewModel />
-    </ContentPage.BindingContext>
-    
-    <ScrollView >
-        <VerticalStackLayout
-            Padding="30,0"
-            Spacing="25">
+<ContentPage
+    x:Class="maui.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:components="clr-namespace:maui.Components;assembly=maui"
+    xmlns:converter="clr-namespace:maui.Converters"
+    xmlns:local="clr-namespace:maui.ViewModels;assembly=maui"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
+    <ContentPage.Resources>
+        <converter:StringToBoolConverter x:Key="StringToBoolConverter" />
+        <converter:StringToColorConverter x:Key="StringToColorConmvter" />
+    </ContentPage.Resources>
+    <ScrollView>
+        <VerticalStackLayout Padding="30,0" Spacing="25">
 
             <VerticalStackLayout>
                 <Label Text="Company:" />
-                <Picker x:Name="company" SelectedItem="{Binding SelectedCompany}" ItemsSource="{Binding Companies}" />
+                <Picker
+                    x:Name="company"
+                    ItemsSource="{Binding Companies}"
+                    SelectedItem="{Binding SelectedCompany}" />
 
                 <ListView ItemsSource="{Binding ChatMessages}">
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <ViewCell>
-                                <components:ChatBubble Message="{Binding}" />
+                                <Grid
+                                    ColumnDefinitions="*,*"
+                                    HorizontalOptions="FillAndExpand"
+                                    RowDefinitions="60">
+                                    <BoxView
+                                        Grid.Column="{Binding Type, Converter={StaticResource StringToBoolConverter}}"
+                                        BackgroundColor="{Binding Type, Converter={StaticResource StringToColorConmvter}}"
+                                        CornerRadius="5" />
+                                    <Label
+                                        Grid.Column="{Binding Type, Converter={StaticResource StringToBoolConverter}}"
+                                        HorizontalTextAlignment="Center"
+                                        Text="{Binding Content}"
+                                        VerticalTextAlignment="Center" />
+
+
+                                    <!--<components:ChatBubble Grid.Column="{Binding Type, Converter={StaticResource StringToBoolConverter}}" Message="{Binding Content}" />-->
+                                </Grid>
                             </ViewCell>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-                
-                <!--
-                <ListView ItemsSource="{Binding ChatMessages}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <ViewCell>
-                                <StackLayout Orientation="Horizontal">
-                                    <Label Text="{Binding Content}" TextColor="Blue" />
-                                </StackLayout>
-                            </ViewCell>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-                -->
-                <!-- Add a text input for a chat message -->
-                <Entry x:Name="chatInput" Text="{Binding ChatMessage}" Placeholder="Chat Message" />
-                <Button Text="Send Test Message" Clicked="SendTestMessage" />
+
+                <!--  Add a text input for a chat message  -->
+                <Entry
+                    x:Name="chatInput"
+                    Placeholder="Chat Message"
+                    Text="{Binding ChatMessage}" />
+                <Button Clicked="SendTestMessage" Text="Send Test Message" />
 
 
             </VerticalStackLayout>
