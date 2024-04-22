@@ -26,13 +26,13 @@ namespace maui.ViewModels
             }
         }
 
-        private String _chatMessage;
-        public String ChatMessage { 
-            get => _chatMessage;
+        private String _chatInput;
+        public String ChatInput{ 
+            get => _chatInput;
             set
             {
-                _chatMessage = value;
-                OnPropertyChanged(nameof(ChatMessage));
+                _chatInput = value;
+                OnPropertyChanged(nameof(ChatInput));
             }
         }
 
@@ -55,13 +55,13 @@ namespace maui.ViewModels
         {
 
             // Create some dummy CognitiveSearchResults
-            cognitiveSearchResults.Add(new CognitiveSearchResult { Title = "Title 1", Content = "Description 1", FileName="xyz-retail-2024-1"});
-            cognitiveSearchResults.Add(new CognitiveSearchResult { Title = "Title 2", Content = "Description 2", FileName = "xyz-retail-2024-2" });
-            cognitiveSearchResults.Add(new CognitiveSearchResult { Title = "Title 3", Content = "Description 3", FileName = "xyz-retail-2024-3" });
+            cognitiveSearchResults.Add(new CognitiveSearchResult { Id = 1, Title = "Title 1", Content = "Description 1", FileName="xyz-retail-2024-1"});
+            cognitiveSearchResults.Add(new CognitiveSearchResult { Id = 2, Title = "Title 2", Content = "Description 2", FileName = "xyz-retail-2024-2" });
+            cognitiveSearchResults.Add(new CognitiveSearchResult { Id = 3, Title = "Title 3", Content = "Description 3", FileName = "xyz-retail-2024-3" });
 
             // Create some OpenAIChatMessages and add them to the ChatMessages list
             ChatMessages.Add(new OpenAIChatMessage { ChatBubbleId = "1", Content = "Hello, how can I help you?", Type = "human" });
-            ChatMessages.Add(new OpenAIChatMessage { ChatBubbleId = "2", Content = "I am an AI [DOC 1 - xyz-retail-2024-3", Type = "ai", Sources=cognitiveSearchResults });
+            ChatMessages.Add(new OpenAIChatMessage { ChatBubbleId = "2", Content = "I am an AI [DOC 3 - xyz-retail-2024-3]", Type = "ai", Sources=cognitiveSearchResults });
         }
 
         public async void SetupConnection()
@@ -220,7 +220,7 @@ namespace maui.ViewModels
 
             try
             {
-                if (!string.IsNullOrWhiteSpace(ChatMessage))
+                if (!string.IsNullOrWhiteSpace(ChatInput))
                 {
                     cognitiveSearchResults = new List<CognitiveSearchResult>();
                     isLoadingSources = true;
@@ -232,16 +232,16 @@ namespace maui.ViewModels
                         previousMessages.Add(message);
                     }
 
-                    ChatMessages.Add(new OpenAIChatMessage { ChatBubbleId = chatMessageGuid, Content = ChatMessage, Type = "human" });
+                    ChatMessages.Add(new OpenAIChatMessage { ChatBubbleId = chatMessageGuid, Content = ChatInput, Type = "human" });
 
                     OnPropertyChanged(nameof(ChatMessages));
 
                     if (hubConnection != null)
                     {
-                        await hubConnection.SendAsync("SendCogSearchQuery", ChatMessage, includePreviousMessages ? previousMessages : new List<OpenAIChatMessage>(), SelectedCompany, SelectedYear);
+                        await hubConnection.SendAsync("SendCogSearchQuery", ChatInput, includePreviousMessages ? previousMessages : new List<OpenAIChatMessage>(), SelectedCompany, SelectedYear);
                     }
 
-                    ChatMessage = "";
+                    ChatInput = "";
                 }
             }
             catch (Exception)

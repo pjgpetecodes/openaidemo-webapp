@@ -36,7 +36,7 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
-                        <components:ChatBubble Message="{Binding Content}" 
+                        <components:ChatBubble Message="{Binding}" 
                                                Margin="20">
                             <components:ChatBubble.Shadow>
                                 <Shadow Brush="Gray"
@@ -60,8 +60,10 @@
             <Entry  
                 x:Name="chatInput"
                 Placeholder="Chat Message"
-                Text="{Binding ChatMessage}"
-                Grid.Column="0"/>
+                Text="{Binding ChatInput}"
+                Grid.Column="0"
+                Keyboard="Chat"
+                Completed="SendMessage"/>
             <Button Clicked="SendMessage" Text="Send" Grid.Column="1"/>
         </Grid>
         
