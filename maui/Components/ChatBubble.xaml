@@ -20,8 +20,7 @@
         <BoxView
             Grid.Column="{Binding Source={x:Reference this}, Path=Message.Type, Converter={StaticResource StringToBoolConverter}}"
             BackgroundColor="{Binding Source={x:Reference this}, Path=Message.Type, Converter={StaticResource StringToColorConverter}}"
-            CornerRadius="{Binding Source={x:Reference this}, Path=Message.Type, Converter={StaticResource StringToCornerRadiusConverter}}"
-            Margin="{Binding Source={x:Reference this}, Path=Message.Type, Converter={StaticResource StringToCornerRadiusConverter}}">
+            CornerRadius="{Binding Source={x:Reference this}, Path=Message.Type, Converter={StaticResource StringToCornerRadiusConverter}}">
         </BoxView>
         <Grid Grid.Column="{Binding Source={x:Reference this}, Path=Message.Type, Converter={StaticResource StringToBoolConverter}}">
             <Grid.RowDefinitions>
@@ -55,7 +54,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <Label Grid.Row="0" Text="Citations:" FontAttributes="Bold" Margin="0,10"/>
+                    <Label Text="Citations:" Grid.Row="0"  FontAttributes="Bold" Margin="0,10"/>
                     <CollectionView x:Name="CitationsCollectionView" Grid.Row="1" ItemsSource="{Binding Source={x:Reference this}, Path=Citations}" SelectionMode="Single">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>

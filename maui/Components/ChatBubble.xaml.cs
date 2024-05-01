@@ -65,30 +65,27 @@ public partial class ChatBubble : ContentView
     private void SetDocSources()
     {
 
-        Debug.WriteLine("GetDocSources");
-
-        // If citations is null, then create a new ObservableCollection if not then clear the collection
-        if (Citations == null)
-        {
-            Citations = new ObservableCollection<CognitiveSearchResult>();
-        }
-        else
+        Application.Current.MainPage.Dispatcher.Dispatch(async () =>
         {
             Citations.Clear();
-        }
 
-        if (Message != null && Message.Sources != null)
-        {
-            foreach (var source in Message.Sources)
+            if (Message != null && Message.Sources != null)
             {
-                if (Message.Content.Contains("DOC " + source.Id))
+                Debug.WriteLine("GetDocSources for Message: " + Message.Content);
+
+                foreach (var source in Message.Sources)
                 {
-                    Citations.Add(source);
+                    if (Message.Content.Contains("DOC " + source.Id))
+                    {
+                        Citations.Add(source);
+                        Debug.WriteLine("Citations: " + Citations.Count);
+                    }
                 }
             }
-        }
 
-        Debug.WriteLine("docSources.Count: " + Citations.Count);
+            Debug.WriteLine("Total Citations: " + Citations.Count);
+
+        });        
 
     }
 
@@ -100,7 +97,7 @@ public partial class ChatBubble : ContentView
     public ChatBubble()
     {
         InitializeComponent();
-
+        Citations = new ObservableCollection<CognitiveSearchResult>();
 
     }
 }
