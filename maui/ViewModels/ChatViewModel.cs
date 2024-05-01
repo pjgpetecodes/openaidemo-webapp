@@ -62,6 +62,8 @@ namespace maui.ViewModels
             // Create some OpenAIChatMessages and add them to the ChatMessages list
             ChatMessages.Add(new OpenAIChatMessage { ChatBubbleId = "1", Content = "Hello, how can I help you?", Type = "human" });
             ChatMessages.Add(new OpenAIChatMessage { ChatBubbleId = "2", Content = "I am an AI [DOC 3 - xyz-retail-2024-3]", Type = "ai", Sources=cognitiveSearchResults });
+            SelectedYear = "";
+            SelectedCompany = "";
         }
 
         public async void SetupConnection()
