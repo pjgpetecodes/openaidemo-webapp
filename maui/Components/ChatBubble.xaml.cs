@@ -1,5 +1,6 @@
 using openaidemo_webapp.Shared;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace maui.Components;
@@ -22,8 +23,26 @@ public partial class ChatBubble : ContentView
         get => (OpenAIChatMessage)GetValue(ChatBubble.MessageProperty);
         set => SetValue(ChatBubble.MessageProperty, value);
     }
+    private static void OnMessageChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        Console.WriteLine($"OnMessageChanged: {newValue}");
 
-    public static readonly BindableProperty CitationsProperty = BindableProperty.Create(nameof(Message), typeof(ObservableCollection<CognitiveSearchResult>), typeof(ChatBubble));
+        var chatBubble = (ChatBubble)bindable;
+        Application.Current.MainPage.Dispatcher.Dispatch(async () =>
+        {
+            chatBubble.SetDocSources();
+        });
+
+    }
+
+    //public static readonly BindableProperty CitationsProperty = BindableProperty.Create(nameof(Message), typeof(ObservableCollection<CognitiveSearchResult>), typeof(ChatBubble));
+    public static readonly BindableProperty CitationsProperty = BindableProperty.Create(
+        propertyName: nameof(Citations),
+        returnType: typeof(ObservableCollection<CognitiveSearchResult>),
+        declaringType: typeof(ChatBubble),
+        defaultValue: null,
+        defaultBindingMode: BindingMode.OneWay,
+        propertyChanged: OnCitationsChanged);
 
     public ObservableCollection<CognitiveSearchResult> Citations
     {
@@ -31,20 +50,32 @@ public partial class ChatBubble : ContentView
         set => SetValue(ChatBubble.CitationsProperty, value);
     }
 
-    private static void OnMessageChanged(BindableObject bindable, object oldValue, object newValue)
+    private static void OnCitationsChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        Console.WriteLine($"OnMessageChanged: {newValue}");
-
+        // Cast the bindable object to ChatBubble so we can access its properties
         var chatBubble = (ChatBubble)bindable;
-        chatBubble.SetDocSources();
+
+        // Cast the newValue to the correct type
+        var newCitations = (ObservableCollection<CognitiveSearchResult>)newValue;
+
+        // Update the UI
+        chatBubble.CitationsCollectionView.ItemsSource = newCitations;
     }
 
     private void SetDocSources()
     {
 
-        Console.WriteLine("GetDocSources");
+        Debug.WriteLine("GetDocSources");
 
-        Citations = new ObservableCollection<CognitiveSearchResult>();
+        // If citations is null, then create a new ObservableCollection if not then clear the collection
+        if (Citations == null)
+        {
+            Citations = new ObservableCollection<CognitiveSearchResult>();
+        }
+        else
+        {
+            Citations.Clear();
+        }
 
         if (Message != null && Message.Sources != null)
         {
@@ -57,7 +88,7 @@ public partial class ChatBubble : ContentView
             }
         }
 
-        Console.WriteLine("docSources.Count: " + Citations.Count);
+        Debug.WriteLine("docSources.Count: " + Citations.Count);
 
     }
 
