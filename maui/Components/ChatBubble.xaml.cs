@@ -34,7 +34,7 @@ public partial class ChatBubble : ContentView
         propertyName: nameof(Citations),
         returnType: typeof(ObservableCollection<CognitiveSearchResult>),
         declaringType: typeof(ChatBubble),
-        defaultValue: new ObservableCollection<CognitiveSearchResult>(),
+        defaultValue: null,
         defaultBindingMode: BindingMode.OneWay);
 
     public ObservableCollection<CognitiveSearchResult> Citations
@@ -70,6 +70,6 @@ public partial class ChatBubble : ContentView
     public ChatBubble()
     {
         InitializeComponent();
-        
+        Citations = new ObservableCollection<CognitiveSearchResult>();
     }
 }

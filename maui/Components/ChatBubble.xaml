@@ -58,7 +58,7 @@
                     <CollectionView x:Name="CitationsCollectionView" Grid.Row="1" ItemsSource="{Binding Source={x:Reference this}, Path=Citations}" SelectionMode="Single">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
-                                <Label Text="{Binding FileName}" />
+                                <Label Text="{Binding FileName}" ToolTipProperties.Text="{Binding Content}" />
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
