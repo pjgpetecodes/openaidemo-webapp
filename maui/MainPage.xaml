@@ -20,15 +20,32 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Label Text="Company:" Grid.Row="0"/>
-            <Picker
-                x:Name="company"
-                ItemsSource="{Binding Companies}"
-                SelectedItem="{Binding SelectedCompany}" 
-                Grid.Row="1"/>
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Label Text="Company:" Grid.Row="0"/>
+                <Picker x:Name="company"
+                        ItemsSource="{Binding Companies}"
+                        SelectedItem="{Binding SelectedCompany}" 
+                        Grid.Row="1"/>
+            </Grid>
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Label Text="Year:" Grid.Row="0"/>
+                <Picker x:Name="year"
+                        ItemsSource="{Binding Years}"
+                        SelectedItem="{Binding SelectedYear}" 
+                        Grid.Row="1"/>
+            </Grid>
         </Grid>        
 
-        <ListView ItemsSource="{Binding ChatMessages}" 
+        <ListView x:Name="ChatListView"
+                  ItemsSource="{Binding ChatMessages}" 
                   VerticalOptions="FillAndExpand"
                   Grid.Row="1"
                   Margin="0, 20"

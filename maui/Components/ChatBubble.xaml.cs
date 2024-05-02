@@ -1,5 +1,6 @@
 using openaidemo_webapp.Shared;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -23,11 +24,35 @@ public partial class ChatBubble : ContentView
     }
     private static void OnMessageChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        Debug.WriteLine($"OnMessageChanged: {newValue}");
-
         var chatBubble = (ChatBubble)bindable;
-        chatBubble.SetDocSources();
 
+        // Unsubscribe from the PropertyChanged event of the old message
+        if (oldValue is OpenAIChatMessage oldMessage)
+        {
+            oldMessage.PropertyChanged -= chatBubble.OnMessagePropertyChanged;
+        }
+
+        // Subscribe to the PropertyChanged event of the new message
+        if (newValue is OpenAIChatMessage newMessage)
+        {
+            newMessage.PropertyChanged += chatBubble.OnMessagePropertyChanged;
+        }
+
+        Application.Current.MainPage.Dispatcher.Dispatch(async () =>
+        {
+            chatBubble.SetDocSources();
+        });
+    }
+
+    private void OnMessagePropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(OpenAIChatMessage.Content))
+        {
+            Application.Current.MainPage.Dispatcher.Dispatch(async () =>
+            {
+                SetDocSources();
+            });
+        }
     }
 
     public static readonly BindableProperty CitationsProperty = BindableProperty.Create(

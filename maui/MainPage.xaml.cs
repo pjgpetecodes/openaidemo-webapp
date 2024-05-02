@@ -14,7 +14,17 @@ namespace maui
             InitializeComponent();
 
             BindingContext = chatViewModel;
+            chatViewModel.ChatMessageAdded += ScrollToBottom;
             chatViewModel.SetupConnection();
+        }
+
+        private void ScrollToBottom()
+        {
+            var lastMessage = chatViewModel.ChatMessages.LastOrDefault();
+            if (lastMessage != null)
+            {
+                //ChatListView.ScrollTo(lastMessage, ScrollToPosition.End, true);
+            }
         }
 
         private async void SendMessage(object sender, EventArgs e)
