@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -26,10 +26,10 @@ jobs:
         run: dotnet workload restore
   
       - name: Build with dotnet
-        run: dotnet build --configuration Release
-
+        run: dotnet build openaidemo-webapp.Shared/openaidemo-webapp.Shared.csproj openaidemo-webapp.Client/openaidemo-webapp.Client.csproj openaidemo-webapp.Server.csproj --configuration Release
+      
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish openaidemo-webapp.Shared/openaidemo-webapp.Shared.csproj openaidemo-webapp.Client/openaidemo-webapp.Client.csproj openaidemo-webapp.Server.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
