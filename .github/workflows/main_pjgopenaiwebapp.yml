@@ -26,10 +26,16 @@ jobs:
         run: dotnet workload restore
   
       - name: Build with dotnet
-        run: dotnet build openaidemo-webapp.Shared/openaidemo-webapp.Shared.csproj openaidemo-webapp.Client/openaidemo-webapp.Client.csproj openaidemo-webapp.Server.csproj --configuration Release
+        run: |
+          dotnet build openaidemo-webapp.Shared/openaidemo-webapp.Shared.csproj --configuration Release
+          dotnet build openaidemo-webapp.Client/openaidemo-webapp.Client.csproj --configuration Release
+          dotnet build openaidemo-webapp.Server/openaidemo-webapp.Server.csproj --configuration Release
       
       - name: dotnet publish
-        run: dotnet publish openaidemo-webapp.Shared/openaidemo-webapp.Shared.csproj openaidemo-webapp.Client/openaidemo-webapp.Client.csproj openaidemo-webapp.Server.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: |
+          dotnet publish openaidemo-webapp.Shared/openaidemo-webapp.Shared.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+          dotnet publish openaidemo-webapp.Client/openaidemo-webapp.Client.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+          dotnet publish openaidemo-webapp.Server/openaidemo-webapp.Server.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
