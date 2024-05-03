@@ -10,7 +10,7 @@ using openaidemo_webapp.Shared;
 
 namespace openaidemo_webapp.Server.Hubs
 {
-    [Authorize]
+    //[Authorize]
     public class ChatHub : Hub
     {
         private readonly IConfiguration _config;
