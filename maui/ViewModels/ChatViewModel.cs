@@ -134,6 +134,7 @@ namespace maui.ViewModels
         {
             string accessToken = "";
 
+            /*
             try
             {
                 var builder = new ConfigurationBuilder()
@@ -163,12 +164,12 @@ namespace maui.ViewModels
                 Debug.WriteLine(ex.Message);
                 throw;
             }
-           
+            */           
 
             hubConnection = new HubConnectionBuilder()
                    .WithUrl("https://pjgopenaiwebapp.azurewebsites.net/chathub", conf =>
                    {
-                       conf.AccessTokenProvider = () => Task.FromResult(accessToken);
+                       //conf.AccessTokenProvider = () => Task.FromResult(accessToken);
 
                        conf.HttpMessageHandlerFactory = (x) => new HttpClientHandler
                        {
