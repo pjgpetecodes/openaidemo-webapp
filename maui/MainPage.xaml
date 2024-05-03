@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="maui.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:components="clr-namespace:maui.Components;assembly=maui"
+    xmlns:converter="clr-namespace:maui.Converters"
+    xmlns:local="clr-namespace:maui.ViewModels;assembly=maui"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
+    
+    <Grid Padding="30,0" Margin="30" VerticalOptions="FillAndExpand">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Label Text="Company:" Grid.Row="0"/>
+                <Picker x:Name="company"
+                        ItemsSource="{Binding Companies}"
+                        SelectedItem="{Binding SelectedCompany}" 
+                        Grid.Row="1"/>
+            </Grid>
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Label Text="Year:" Grid.Row="0"/>
+                <Picker x:Name="year"
+                        ItemsSource="{Binding Years}"
+                        SelectedItem="{Binding SelectedYear}" 
+                        Grid.Row="1"/>
+            </Grid>
+        </Grid>        
+
+        <ListView x:Name="ChatListView"
+                  ItemsSource="{Binding ChatMessages}" 
+                  VerticalOptions="FillAndExpand"
+                  Grid.Row="1"
+                  Margin="0, 20"
+                  BackgroundColor="AliceBlue">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <components:ChatBubble Message="{Binding}" 
+                                               Margin="20">
+                            <components:ChatBubble.Shadow>
+                                <Shadow Brush="Gray"
+                                        Offset="10,10"
+                                        Radius="20"
+                                        Opacity="0.8"/>
+                            </components:ChatBubble.Shadow>
+                        </components:ChatBubble>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!--  Add a text input for a chat message  -->
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="90" />
+            </Grid.ColumnDefinitions>
+            <Entry  
+                x:Name="chatInput"
+                Placeholder="Chat Message"
+                Text="{Binding ChatInput}"
+                Grid.Column="0"
+                Keyboard="Chat"
+                Completed="SendMessage"/>
+            <Button Clicked="SendMessage" Text="Send" Grid.Column="1"/>
+        </Grid>
+        
+    </Grid>
+
+</ContentPage>

@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using openaidemo_webapp.Server.Helpers;
 using openaidemo_webapp.Shared;
 
 namespace openaidemo_webapp.Server.Hubs
 {
+    [Authorize]
     public class ChatHub : Hub
     {
         private readonly IConfiguration _config;

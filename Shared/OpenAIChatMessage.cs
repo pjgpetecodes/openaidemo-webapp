@@ -1,11 +1,80 @@
-﻿namespace openaidemo_webapp.Shared
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
+namespace openaidemo_webapp.Shared
 {
-    public class OpenAIChatMessage
+    public class OpenAIChatMessage : INotifyPropertyChanged
     {
-        public string ChatBubbleId { get; set; }
-        public string Type { get; set; }
-        public string Content { get; set; }
-        public bool IsTemporaryResponse { get; set; }
-        public List<CognitiveSearchResult>? Sources { get; set; }
+        private string _chatBubbleId;
+        private string _type;
+        private string _content;
+        private bool _isTemporaryResponse;
+        private List<CognitiveSearchResult>? _sources;
+
+        public string ChatBubbleId
+        {
+            get => _chatBubbleId;
+            set
+            {
+                _chatBubbleId = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Type
+        {
+            get => _type;
+            set
+            {
+                _type = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Content
+        {
+            get => _content;
+            set
+            {
+                _content = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsTemporaryResponse
+        {
+            get => _isTemporaryResponse;
+            set
+            {
+                _isTemporaryResponse = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public List<CognitiveSearchResult>? Sources
+        {
+            get => _sources;
+            set
+            {
+                _sources = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public OpenAIChatMessage()
+        {
+            ChatBubbleId = "";
+            Type = "";
+            Content = "";
+            IsTemporaryResponse = false;
+        }
     }
 }

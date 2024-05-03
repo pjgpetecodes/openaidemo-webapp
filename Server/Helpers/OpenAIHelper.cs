@@ -134,7 +134,7 @@ namespace openaidemo_webapp.Server.Helpers
             initPrompt += $"The current date is {DateTime.Now.ToShortDateString()}";
 
             var sourcesPrompt = @"When relevant, use facts and numbers from the following documents in your answer.
-                              Whenever you use information from a referenced document, reference it at the end of the sentence (ex: [DOC 2 - FileName]).
+                              Whenever you use information from a referenced document, reference it at the end of the sentence (ex: [DOC 1 - FileName], [DOC 2 - Filename]).
                               You don't have to use all documents, only if it makes sense in the conversation.
                               If no documents are provided, then do not add a reference.
                               If no relevant information to answer the question is present in the documents,
