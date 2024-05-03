@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -22,14 +22,11 @@ jobs:
           dotnet-version: '8.0.100-rc.2.23502.2'
           include-prerelease: true
 
-      - name: Install necessary workloads
-        run: dotnet workload restore
-  
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build githubactions-webapp.sln --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish githubactions-webapp.sln -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
