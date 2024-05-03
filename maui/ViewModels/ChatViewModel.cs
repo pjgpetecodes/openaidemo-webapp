@@ -8,6 +8,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Identity.Client;
+using Microsoft.Extensions.Configuration;
+using System.Diagnostics;
 
 namespace maui.ViewModels
 {
@@ -129,9 +132,44 @@ namespace maui.ViewModels
         /// </summary>
         public async void SetupConnection()
         {
+            string accessToken = "";
+
+            try
+            {
+                var builder = new ConfigurationBuilder()
+               .SetBasePath(Directory.GetCurrentDirectory())
+               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+               .AddUserSecrets<ChatViewModel>();
+
+                IConfiguration configuration = builder.Build();
+
+                var clientId = configuration["clientId"];
+                var clientName = configuration["clientName"];
+                var tenantId = configuration["tenantId"];
+
+                var pca = PublicClientApplicationBuilder
+                    .Create(clientId)
+                    .WithRedirectUri($"msal{clientName}://auth")
+                    .WithAuthority(AzureCloudInstance.AzurePublic, tenantId)
+                    .Build();
+
+                var scopes = new string[] { "user.read" };
+                var result = await pca.AcquireTokenInteractive(scopes).ExecuteAsync();
+
+                accessToken = result.AccessToken;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                throw;
+            }
+           
+
             hubConnection = new HubConnectionBuilder()
-                   .WithUrl("https://localhost:7063/chathub", conf =>
+                   .WithUrl("https://pjgopenaiwebapp.azurewebsites.net/chathub", conf =>
                    {
+                       conf.AccessTokenProvider = () => Task.FromResult(accessToken);
+
                        conf.HttpMessageHandlerFactory = (x) => new HttpClientHandler
                        {
                            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
