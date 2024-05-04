@@ -164,10 +164,23 @@ namespace maui.ViewModels
                 Debug.WriteLine(ex.Message);
                 throw;
             }
-            */           
+            */
+
+            String url = "";
+
+            // If we're debugging locally then use localhost
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                url = "https://localhost:7063/chathub";
+                //url = "https://10.0.2.2:7063/chathub";
+            }
+            else
+            {
+                url = "https://pjgopenaiwebapp.azurewebsites.net/chathub";
+            }
 
             hubConnection = new HubConnectionBuilder()
-                   .WithUrl("https://pjgopenaiwebapp.azurewebsites.net/chathub", conf =>
+                   .WithUrl(url, conf =>
                    {
                        //conf.AccessTokenProvider = () => Task.FromResult(accessToken);
 
@@ -338,7 +351,7 @@ namespace maui.ViewModels
             catch (System.Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                throw;
+                //throw;
             }
         }
 
@@ -408,7 +421,7 @@ namespace maui.ViewModels
             catch (Exception)
             {
 
-                throw;
+                //throw;
             }
         }
 
@@ -426,7 +439,7 @@ namespace maui.ViewModels
             catch (Exception)
             {
 
-                throw;
+                //throw;
             }
             
         }

@@ -68,6 +68,19 @@ public partial class ChatBubble : ContentView
         set => SetValue(ChatBubble.CitationsProperty, value);
     }
 
+    public static readonly BindableProperty CitationsAvailableProperty = BindableProperty.Create(
+        propertyName: nameof(CitationsAvailable),
+        returnType: typeof(Boolean),
+        declaringType: typeof(ChatBubble),
+        defaultValue: false,
+        defaultBindingMode: BindingMode.OneWay);
+
+    public Boolean CitationsAvailable
+    {
+        get => (Boolean)GetValue(ChatBubble.CitationsAvailableProperty);
+        set => SetValue(ChatBubble.CitationsAvailableProperty, value);
+    }    
+
     private void SetDocSources()
     {
         Citations.Clear();
@@ -84,6 +97,15 @@ public partial class ChatBubble : ContentView
                     Debug.WriteLine("Citations: " + Citations.Count);
                 }
             }
+        }
+
+        if (Citations != null && Citations.Count > 0)
+        {
+            CitationsAvailable = true;
+        }
+        else
+        {
+            CitationsAvailable = false;
         }
 
         Debug.WriteLine("Total Citations: " + Citations.Count);
