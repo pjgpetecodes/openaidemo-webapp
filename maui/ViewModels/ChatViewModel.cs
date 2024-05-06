@@ -179,6 +179,8 @@ namespace maui.ViewModels
                 url = "https://pjgopenaiwebapp.azurewebsites.net/chathub";
             }
 
+            url = "https://pjgopenaiwebapp.azurewebsites.net/chathub";
+
             hubConnection = new HubConnectionBuilder()
                    .WithUrl(url, conf =>
                    {

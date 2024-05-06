@@ -9,7 +9,7 @@ namespace maui.Converters
             string type = value as string ?? string.Empty;
             if (type is "ai" || type is "AI")
             {
-                return new Thickness(0, 0, 0, 100);
+                return new Thickness(0, 0, 100, 0);
             }
             else
             {

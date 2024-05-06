@@ -15,17 +15,16 @@
     </ContentView.Resources>
 
     <Grid
-        ColumnDefinitions="*,*"
         HorizontalOptions="FillAndExpand"
         RowDefinitions="Auto,*"
         Margin="0,0"
         Padding="0,10">
         <BoxView
-            Grid.Column="{Binding Source={x:Reference this}, Path=Message.Type, Converter={StaticResource StringToBoolConverter}}"
+            Margin="{Binding Source={x:Reference this}, Path=Message.Type, Converter={StaticResource StringToMarginConverter}}"
             BackgroundColor="{Binding Source={x:Reference this}, Path=Message.Type, Converter={StaticResource StringToColorConverter}}"
             CornerRadius="{Binding Source={x:Reference this}, Path=Message.Type, Converter={StaticResource StringToCornerRadiusConverter}}">
         </BoxView>
-        <Grid Grid.Column="{Binding Source={x:Reference this}, Path=Message.Type, Converter={StaticResource StringToBoolConverter}}">
+        <Grid Margin="{Binding Source={x:Reference this}, Path=Message.Type, Converter={StaticResource StringToMarginConverter}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />

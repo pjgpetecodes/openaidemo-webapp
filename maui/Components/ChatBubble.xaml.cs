@@ -1,8 +1,10 @@
+using Microsoft.Maui.Controls.PlatformConfiguration;
 using openaidemo_webapp.Shared;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui;
 
 namespace maui.Components;
 
@@ -119,4 +121,5 @@ public partial class ChatBubble : ContentView
         InitializeComponent();
         Citations = new ObservableCollection<CognitiveSearchResult>();
     }
+
 }
