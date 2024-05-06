@@ -1,8 +1,10 @@
+using Microsoft.Maui.Controls.PlatformConfiguration;
 using openaidemo_webapp.Shared;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui;
 
 namespace maui.Components;
 
@@ -68,6 +70,19 @@ public partial class ChatBubble : ContentView
         set => SetValue(ChatBubble.CitationsProperty, value);
     }
 
+    public static readonly BindableProperty CitationsAvailableProperty = BindableProperty.Create(
+        propertyName: nameof(CitationsAvailable),
+        returnType: typeof(Boolean),
+        declaringType: typeof(ChatBubble),
+        defaultValue: false,
+        defaultBindingMode: BindingMode.OneWay);
+
+    public Boolean CitationsAvailable
+    {
+        get => (Boolean)GetValue(ChatBubble.CitationsAvailableProperty);
+        set => SetValue(ChatBubble.CitationsAvailableProperty, value);
+    }    
+
     private void SetDocSources()
     {
         Citations.Clear();
@@ -86,6 +101,15 @@ public partial class ChatBubble : ContentView
             }
         }
 
+        if (Citations != null && Citations.Count > 0)
+        {
+            CitationsAvailable = true;
+        }
+        else
+        {
+            CitationsAvailable = false;
+        }
+
         Debug.WriteLine("Total Citations: " + Citations.Count);
     }
 
@@ -97,4 +121,5 @@ public partial class ChatBubble : ContentView
         InitializeComponent();
         Citations = new ObservableCollection<CognitiveSearchResult>();
     }
+
 }

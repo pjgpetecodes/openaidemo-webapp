@@ -8,7 +8,7 @@
     xmlns:local="clr-namespace:maui.ViewModels;assembly=maui"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
     
-    <Grid Padding="30,0" Margin="30" VerticalOptions="FillAndExpand">
+    <Grid Padding="0,0" Margin="10" VerticalOptions="FillAndExpand">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -42,30 +42,27 @@
                         SelectedItem="{Binding SelectedYear}" 
                         Grid.Row="1"/>
             </Grid>
-        </Grid>        
+        </Grid>
 
-        <ListView x:Name="ChatListView"
-                  ItemsSource="{Binding ChatMessages}" 
-                  VerticalOptions="FillAndExpand"
-                  Grid.Row="1"
-                  Margin="0, 20"
-                  BackgroundColor="AliceBlue">
-            <ListView.ItemTemplate>
+        <CollectionView x:Name="ChatCollectionView"
+                ItemsSource="{Binding ChatMessages}"
+                VerticalOptions="FillAndExpand"
+                Grid.Row="1"
+                Margin="0, 20"
+                BackgroundColor="AliceBlue">
+            <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <ViewCell>
-                        <components:ChatBubble Message="{Binding}" 
-                                               Margin="20">
-                            <components:ChatBubble.Shadow>
-                                <Shadow Brush="Gray"
-                                        Offset="10,10"
-                                        Radius="20"
-                                        Opacity="0.8"/>
-                            </components:ChatBubble.Shadow>
-                        </components:ChatBubble>
-                    </ViewCell>
+                    <components:ChatBubble Message="{Binding}">
+                        <components:ChatBubble.Shadow>
+                            <Shadow Brush="Gray"
+                                    Offset="10,10"
+                                    Radius="20"
+                                    Opacity="0.8"/>
+                        </components:ChatBubble.Shadow>
+                    </components:ChatBubble>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
 
         <!--  Add a text input for a chat message  -->
 
