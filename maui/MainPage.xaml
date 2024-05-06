@@ -6,7 +6,8 @@
     xmlns:components="clr-namespace:maui.Components;assembly=maui"
     xmlns:converter="clr-namespace:maui.Converters"
     xmlns:local="clr-namespace:maui.ViewModels;assembly=maui"
-    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    x:Name="this">
     
     <Grid Padding="0,0" Margin="10" VerticalOptions="FillAndExpand">
         <Grid.RowDefinitions>
@@ -52,14 +53,16 @@
                 BackgroundColor="AliceBlue">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <components:ChatBubble Message="{Binding}">
+                    <components:ChatBubble Message="{Binding}"
+                       CitationSelectedCommand="{Binding Source={x:Reference this}, Path=CitationSelectedCommand}">
                         <components:ChatBubble.Shadow>
                             <Shadow Brush="Gray"
                                     Offset="10,10"
                                     Radius="20"
-                                    Opacity="0.8"/>
+                                    Opacity="0.8"/> 
                         </components:ChatBubble.Shadow>
                     </components:ChatBubble>
+
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

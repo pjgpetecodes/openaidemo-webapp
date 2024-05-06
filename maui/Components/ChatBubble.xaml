@@ -58,7 +58,16 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <Label Text="Citations:" Grid.Row="0"  FontAttributes="Bold" FontSize="Caption" Margin="0,10"/>
-                    <CollectionView x:Name="CitationsCollectionView" Grid.Row="1" ItemsSource="{Binding Source={x:Reference this}, Path=Citations}" SelectionMode="Single">
+
+                    <!--SelectionChangedCommand="{Binding CitationSelectedCommand, Source={x:Reference this}}"
+SelectionChangedCommandParameter="{Binding Source={x:Reference CitationsCollectionView}, Path=SelectedItem}"-->
+                    
+                    <CollectionView x:Name="CitationsCollectionView" 
+                                    Grid.Row="1" 
+                                    ItemsSource="{Binding Source={x:Reference this}, Path=Citations}" 
+                                    SelectedItem="{Binding Source={x:Reference this}, Path=SelectedCitation}"
+                                    SelectionMode="Single"
+                                    SelectionChanged="OnSelectionChanged">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Label Text="{Binding FileName}" ToolTipProperties.Text="{Binding Content}" FontSize="Caption" />

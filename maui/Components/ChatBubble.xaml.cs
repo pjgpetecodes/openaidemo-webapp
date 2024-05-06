@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui;
+using System.Windows.Input;
 
 namespace maui.Components;
 
@@ -81,7 +82,53 @@ public partial class ChatBubble : ContentView
     {
         get => (Boolean)GetValue(ChatBubble.CitationsAvailableProperty);
         set => SetValue(ChatBubble.CitationsAvailableProperty, value);
-    }    
+    }
+
+    public static readonly BindableProperty SelectedCitationProperty = BindableProperty.Create(
+        propertyName: nameof(SelectedCitation),
+        returnType: typeof(CognitiveSearchResult),
+        declaringType: typeof(ChatBubble),
+        defaultValue: null,
+        defaultBindingMode: BindingMode.OneWay,
+        propertyChanged: onSelectedCitationChanged);
+
+    private static void onSelectedCitationChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        var chatBubble = (ChatBubble)bindable;
+
+        if (newValue is CognitiveSearchResult newCitation)
+        {
+            chatBubble.CitationSelectedCommand?.Execute(newCitation);
+        }
+    }
+
+    public CognitiveSearchResult SelectedCitation
+    {
+        get => (CognitiveSearchResult)GetValue(ChatBubble.SelectedCitationProperty);
+        set => SetValue(ChatBubble.SelectedCitationProperty, value);
+    }
+
+    public static readonly BindableProperty CitationSelectedCommandProperty = BindableProperty.Create(
+        propertyName: nameof(CitationSelectedCommand),
+        returnType: typeof(ICommand),
+        declaringType: typeof(ChatBubble),
+        defaultValue: null,
+        defaultBindingMode: BindingMode.OneWay);
+
+    public ICommand CitationSelectedCommand
+    {
+        get => (ICommand)GetValue(CitationSelectedCommandProperty);
+        set => SetValue(CitationSelectedCommandProperty, value);
+    }
+
+    private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var citation = (CognitiveSearchResult)e.CurrentSelection.FirstOrDefault();
+        if (citation != null && CitationSelectedCommand != null && CitationSelectedCommand.CanExecute(citation))
+        {
+            CitationSelectedCommand.Execute(citation);
+        }
+    }
 
     private void SetDocSources()
     {

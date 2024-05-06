@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Identity.Client;
 using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
+using System.Windows.Input;
 
 namespace maui.ViewModels
 {
@@ -19,6 +20,8 @@ namespace maui.ViewModels
         public event PropertyChangedEventHandler PropertyChanged;
 
         private ObservableCollection<OpenAIChatMessage> _chatMessages = new ObservableCollection<OpenAIChatMessage>();
+        public ICommand CitationSelectedCommand { get; private set; }
+
         public ObservableCollection<OpenAIChatMessage> ChatMessages
         {
             get => _chatMessages;
@@ -125,6 +128,9 @@ namespace maui.ViewModels
             AddChatMessage(new OpenAIChatMessage { ChatBubbleId = "2", Content = "I am an AI [DOC 3 - xyz-retail-2024-3]", Type = "ai", Sources= CognitiveSearchResults });
             SelectedYear = "";
             SelectedCompany = "";
+
+            //
+            CitationSelectedCommand = new Command<CognitiveSearchResult>(OnCitationSelected);
         }
 
         /// <summary>
@@ -427,6 +433,12 @@ namespace maui.ViewModels
             }
         }
 
+        private void OnCitationSelected(CognitiveSearchResult citation)
+        {
+            // Handle the selected citation here
+            Debug.WriteLine($"Selected citation: {citation.FileName}");
+        }
+
         /// <summary>
         /// Handle the INotifyPropertyChanged event
         /// </summary>
@@ -445,7 +457,5 @@ namespace maui.ViewModels
             }
             
         }
-
-
     }
 }
