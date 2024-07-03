@@ -49,7 +49,8 @@
     private ChatInput chatInput = new ChatInput() { Query = ""};
     private List<OpenAIChatMessage> chatMessages = new List<OpenAIChatMessage>();
     private ElementReference messagesDiv;
-    
+    private Boolean clippyMode = false;
+
     protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder()
@@ -59,6 +60,11 @@
 
         hubConnection.On<string, string, string>("ReceiveMessage", async (responseGuid, user, message) =>
         {
+            if (clippyMode == true)
+            {
+                await JS.InvokeVoidAsync("clippySpeak", message);
+                chatInput.Query = string.Empty;
+            }
             /*
             var encodedMsg = $"{user}: {message}";
             chatMessages.Add(new ChatBubbleMessage { ChatBubbleId =  new Guid().ToString(), Content = message, Type = "ai" });
@@ -73,19 +79,22 @@
             // Find the chat message with the supplied chatBubbleId
             var chatMessage = chatMessages.Where(chatMessageItem => chatMessageItem.ChatBubbleId == chatBubbleId).FirstOrDefault();
 
-            if (chatMessage != null)
+            if (clippyMode == false)
             {
-                if (chatMessage.IsTemporaryResponse)
+                if (chatMessage != null)
                 {
-                    chatMessage.Content = "";
-                    chatMessage.IsTemporaryResponse = false;
-                }
+                    if (chatMessage.IsTemporaryResponse)
+                    {
+                        chatMessage.Content = "";
+                        chatMessage.IsTemporaryResponse = false;
+                    }
 
-                chatMessage.Content = chatMessage.Content + messageToken;
-            }
-            else
-            {
-                chatMessages.Add(new OpenAIChatMessage { ChatBubbleId = chatBubbleId, Content = messageToken, Type = "ai", IsTemporaryResponse = isTemporaryResponse, Sources = sources });
+                    chatMessage.Content = chatMessage.Content + messageToken;
+                }
+                else
+                {
+                    chatMessages.Add(new OpenAIChatMessage { ChatBubbleId = chatBubbleId, Content = messageToken, Type = "ai", IsTemporaryResponse = isTemporaryResponse, Sources = sources });
+                }
             }
 
             await JS.InvokeVoidAsync("scrollToBottom", "messages");
@@ -110,18 +119,30 @@
 
     private async Task SendQuery()
     {
+        String prompt_prefix = "";
 
         if (!string.IsNullOrWhiteSpace(chatInput.Query))
         {
+
+            if (chatInput.Query.ToLower().Contains("clippy") && clippyMode == false)
+            {
+                clippyMode = true;
+                await JS.InvokeVoidAsync("showClippy", "Clippy");
+            }
 
             String chatMessageGuid = System.Guid.NewGuid().ToString();
 
             chatMessages.Add(new OpenAIChatMessage {ChatBubbleId = chatMessageGuid,  Content = chatInput.Query, Type = "human" });
             await JS.InvokeVoidAsync("scrollToBottom", "messages");
 
-           if (hubConnection != null)
+            if (clippyMode == true)
             {
-                await hubConnection.SendAsync("SendQuery", chatInput.Query, chatMessages);
+                prompt_prefix = "Pretend to be Clippy the Office helper and answer the following query: ";
+            }
+
+            if (hubConnection != null)
+            {
+                await hubConnection.SendAsync("SendQuery", prompt_prefix+ chatInput.Query, chatMessages);
             }
 
         }
