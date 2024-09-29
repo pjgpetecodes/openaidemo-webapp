@@ -52,3 +52,6 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'pjgopenaiwebapp'
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_591E0FB31DF4499FBD7F7FFEB575DE4B }}
+          package: .
