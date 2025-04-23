@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure;
-using Azure.AI.OpenAI;
 using Microsoft.AspNetCore.SignalR;
 using openaidemo_webapp.Shared;
 using System.Linq;
 using openaidemo_webapp.Client.Pages;
+using Azure.AI.OpenAI;
+using OpenAI.Chat;
+using System.ClientModel;
 
 namespace openaidemo_webapp.Server.Helpers
 {
@@ -43,58 +45,62 @@ namespace openaidemo_webapp.Server.Helpers
             await this._signalrClient.SendAsync("ReceiveMessageToken", responseGuid, "ai", "...", true, null);
 
             // Create a new Azure OpenAI Client
-            var client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(key));
-            
+            AzureOpenAIClient azureClient = new(
+                new Uri(endpoint),
+                new ApiKeyCredential(key));
+            ChatClient client = azureClient.GetChatClient(deploymentName);
+
             System.Diagnostics.Debug.Print($"Input: {prompt}");
-            // Prepare the Completions Options
-            var chatCompletionsOptions = new ChatCompletionsOptions()
-            {
-                DeploymentName = deploymentName,
-                Messages =
-                {
-                    //new ChatRequestSystemMessage("You are a helpful assistant. You will talk like a pirate."),
-                    new ChatRequestSystemMessage("You are a helpful assistant"),
-                    new ChatRequestUserMessage(prompt),
-                },
-                Temperature = (float)0.7,
-                MaxTokens = 800,
-                NucleusSamplingFactor = (float)0.95,
-                FrequencyPenalty = 0,
-                PresencePenalty = 0,
-            };
 
             // Add in the previous messages
             int messagesToSkip = previousMessages.Count - 10;
             if (messagesToSkip < 0) messagesToSkip = 0;
 
+            var chatMessages = new List<ChatMessage>
+            {
+                new SystemChatMessage("You are a helpful assistant"),
+                new UserChatMessage(prompt)
+            };
+
             foreach (var previousMessage in previousMessages.Skip(messagesToSkip))
             {
                 if (previousMessage.Type == "ai")
                 {
-                    chatCompletionsOptions.Messages.Add(new ChatRequestAssistantMessage(previousMessage.Content));
+                    chatMessages.Add(new SystemChatMessage(previousMessage.Content));
                 }
                 else if (previousMessage.Type == "human")
                 {
-                    chatCompletionsOptions.Messages.Add(new ChatRequestUserMessage(previousMessage.Content));
+                    chatMessages.Add(new UserChatMessage(previousMessage.Content));
                 }
             }
 
             // Add the prompt message last  
-            chatCompletionsOptions.Messages.Add(new ChatRequestUserMessage(prompt));
+            chatMessages.Add(new UserChatMessage(prompt));
+
+            ChatCompletionOptions chatCompletionsOptions = new ChatCompletionOptions()
+            {
+                Temperature = (float)0.7,
+                FrequencyPenalty = 0,
+                PresencePenalty = 0,
+            };
+
+            var chatUpdates = client.CompleteChatStreamingAsync(chatMessages, chatCompletionsOptions);
 
             var completion = "";
-            
-            //
-            // Get the Completions from OpenAI
-            //
-            await foreach (StreamingChatCompletionsUpdate chatUpdate in client.GetChatCompletionsStreaming(chatCompletionsOptions))
+
+            await foreach (var chatUpdate in chatUpdates)
             {
-                if (!string.IsNullOrEmpty(chatUpdate.ContentUpdate))
+                if (chatUpdate.Role.HasValue)
+                {
+                    Console.Write($"{chatUpdate.Role} : ");
+                }
+
+                foreach (var contentPart in chatUpdate.ContentUpdate)
                 {
                     completion += chatUpdate.ContentUpdate.ToString();
                     messageQueue.Enqueue(new OpenAIChatMessage { ChatBubbleId = responseGuid, Type = "AI", Content = chatUpdate.ContentUpdate.ToString(), IsTemporaryResponse = false });
-                    System.Diagnostics.Debug.Print(chatUpdate.ContentUpdate);
-                }                
+                    System.Diagnostics.Debug.Print(chatUpdate.ContentUpdate.ToString());
+                }
             }
 
             await this._signalrClient.SendAsync("ReceiveMessage", responseGuid, "ai", completion);
