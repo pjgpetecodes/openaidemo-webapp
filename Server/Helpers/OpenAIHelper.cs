@@ -100,8 +100,8 @@ namespace openaidemo_webapp.Server.Helpers
 
                 foreach (var contentPart in chatUpdate.ContentUpdate)
                 {
-                    completion += chatUpdate.ContentUpdate.ToString();
-                    messageQueue.Enqueue(new OpenAIChatMessage { ChatBubbleId = responseGuid, Type = "AI", Content = chatUpdate.ContentUpdate.ToString(), IsTemporaryResponse = false });
+                    completion += contentPart.Text;
+                    messageQueue.Enqueue(new OpenAIChatMessage { ChatBubbleId = responseGuid, Type = "AI", Content = contentPart.Text, IsTemporaryResponse = false });
                     System.Diagnostics.Debug.Print(chatUpdate.ContentUpdate.ToString());
                 }
             }
@@ -216,8 +216,8 @@ namespace openaidemo_webapp.Server.Helpers
 
                 foreach (var contentPart in chatUpdate.ContentUpdate)
                 {
-                    completion += chatUpdate.ContentUpdate.ToString();
-                    messageQueue.Enqueue(new OpenAIChatMessage { ChatBubbleId = responseGuid, Type = "AI", Content = chatUpdate.ContentUpdate.ToString(), IsTemporaryResponse = false });
+                    completion += contentPart.Text;
+                    messageQueue.Enqueue(new OpenAIChatMessage { ChatBubbleId = responseGuid, Type = "AI", Content = contentPart.Text, IsTemporaryResponse = false });
                     System.Diagnostics.Debug.Print(chatUpdate.ContentUpdate.ToString());
                 }
             }

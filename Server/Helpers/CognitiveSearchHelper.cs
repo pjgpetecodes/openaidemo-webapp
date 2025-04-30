@@ -275,7 +275,7 @@ namespace openaidemo_webapp.Server.Helpers
                 Dimensions = ModelDimensions,
             };
 
-            OpenAIEmbedding embeddingResponse = await openAIEmbeddingClient.GenerateEmbeddingAsync(text, embeddingGenerationOptions);
+            OpenAIEmbedding embeddingResponse = await openAIEmbeddingClient.GenerateEmbeddingAsync(text);
             return embeddingResponse.ToFloats();
         }
 
