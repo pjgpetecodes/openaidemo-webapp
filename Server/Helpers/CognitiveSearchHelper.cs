@@ -11,6 +11,10 @@ using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using openaidemo_webapp.Shared;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using OpenAI.Chat;
+using System.ClientModel;
+using OpenAI.Embeddings;
 
 namespace openaidemo_webapp.Server.Helpers
 {
@@ -30,8 +34,7 @@ namespace openaidemo_webapp.Server.Helpers
         private string openAIEndpoint;
         private string embeddingModelDeploymentName;
 
-        private AzureKeyCredential openAICredential;
-        private OpenAIClient openAIClient;
+        private EmbeddingClient openAIEmbeddingClient;
 
         private AzureKeyCredential searchCredential;
         private SearchIndexClient indexClient;
@@ -62,9 +65,11 @@ namespace openaidemo_webapp.Server.Helpers
             openAIEndpoint = $"https://{_config["OpenAI:InstanceName"]}.openai.azure.com";
             embeddingModelDeploymentName = _config["OpenAI:EmbedDeploymentName"] ?? string.Empty;
 
-            // Initialize OpenAI client  
-            openAICredential = new AzureKeyCredential(openAIApiKey);
-            openAIClient = new OpenAIClient(new Uri(openAIEndpoint), openAICredential);
+            // Create a new Azure OpenAI Client
+            AzureOpenAIClient azureClient = new(
+                new Uri(openAIEndpoint),
+                new ApiKeyCredential(openAIApiKey));
+            openAIEmbeddingClient = azureClient.GetEmbeddingClient(embeddingModelDeploymentName);
 
             // Initialize Azure Cognitive Search clients  
             searchCredential = new AzureKeyCredential(cognitiveSearchKey);
@@ -84,7 +89,7 @@ namespace openaidemo_webapp.Server.Helpers
                 indexClient.CreateOrUpdateIndex(ComposeIndex(indexName));
 
                 // Create the Vectors for the paragraphs
-                var indexDocuments = await ProcessExtractionsAsync(openAIClient, extractionResult.ExtractedParagraphs, extractionResult.FileName, extractionResult.Company, extractionResult.Year, signalRClient);
+                var indexDocuments = await ProcessExtractionsAsync(openAIEmbeddingClient, extractionResult.ExtractedParagraphs, extractionResult.FileName, extractionResult.Company, extractionResult.Year, signalRClient);
                 await searchClient.IndexDocumentsAsync(IndexDocumentsBatch.Upload(indexDocuments));
 
                 // Convert sampleDocuments back to ExtractionResult  
@@ -218,7 +223,7 @@ namespace openaidemo_webapp.Server.Helpers
         //
         // Generate Embeddings for all of the extracted PDF Paragraphs
         //
-        internal async Task<List<SearchDocument>> ProcessExtractionsAsync(OpenAIClient openAIClient, List<ExtractedParagraph> extractedParagraphs, String FileName, String Company, String Year, ISingleClientProxy signalRClient)
+        internal async Task<List<SearchDocument>> ProcessExtractionsAsync(EmbeddingClient openAIEmbeddingClient, List<ExtractedParagraph> extractedParagraphs, String FileName, String Company, String Year, ISingleClientProxy signalRClient)
         {
             List<SearchDocument> searchDocuments = new List<SearchDocument>();
 
@@ -232,7 +237,7 @@ namespace openaidemo_webapp.Server.Helpers
                 string title = extraction.Title?.ToString() ?? string.Empty;
                 string content = extraction.Content?.ToString() ?? string.Empty;
 
-                float[] contentEmbeddings = (await GenerateEmbeddings(content, openAIClient)).ToArray();
+                float[] contentEmbeddings = (await GenerateEmbeddings(content, openAIEmbeddingClient)).ToArray();
 
                 extraction.ContentVector = contentEmbeddings;
 
@@ -262,16 +267,16 @@ namespace openaidemo_webapp.Server.Helpers
         //
         // Generate OpenAI Embeddings for the given text
         //
-        private async Task<ReadOnlyMemory<float>> GenerateEmbeddings(string text, OpenAIClient openAIClient)
+        private async Task<ReadOnlyMemory<float>> GenerateEmbeddings(string text, EmbeddingClient openAIEmbeddingClient)
         {
-            EmbeddingsOptions embeddingsOptions = new EmbeddingsOptions()
+            
+            EmbeddingGenerationOptions embeddingGenerationOptions = new EmbeddingGenerationOptions()
             {
-                DeploymentName = _config["OpenAI:EmbedDeploymentName"],
-                Input = { text }
+                Dimensions = ModelDimensions,
             };
 
-            var response = await openAIClient.GetEmbeddingsAsync(embeddingsOptions);
-            return response.Value.Data[0].Embedding;
+            OpenAIEmbedding embeddingResponse = await openAIEmbeddingClient.GenerateEmbeddingAsync(text, embeddingGenerationOptions);
+            return embeddingResponse.ToFloats();
         }
 
         //
@@ -282,7 +287,7 @@ namespace openaidemo_webapp.Server.Helpers
             try
             {
                 // Generate the embedding for the query  
-                var queryEmbeddings = await GenerateEmbeddings(query, openAIClient);
+                var queryEmbeddings = await GenerateEmbeddings(query, openAIEmbeddingClient);
 
                 // Perform the vector similarity search  
                 var searchOptions = new SearchOptions
@@ -370,7 +375,7 @@ namespace openaidemo_webapp.Server.Helpers
             try
             {
                 // Generate the embedding for the query  
-                var queryEmbeddings = await GenerateEmbeddings(query, openAIClient);
+                var queryEmbeddings = await GenerateEmbeddings(query, openAIEmbeddingClient);
 
                 // Perform the vector similarity search  
                 var searchOptions = new SearchOptions
@@ -458,7 +463,7 @@ namespace openaidemo_webapp.Server.Helpers
             try
             {
                 // Generate the embedding for the query  
-                var queryEmbeddings = await GenerateEmbeddings(query, openAIClient);
+                var queryEmbeddings = await GenerateEmbeddings(query, openAIEmbeddingClient);
 
                 // Perform the vector similarity search  
                 var searchOptions = new SearchOptions
